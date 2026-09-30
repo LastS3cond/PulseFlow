@@ -272,11 +272,11 @@ export function HeatmapGrid({
       </div>
 
       {/* Legend & Legend Info */}
-      <div className="flex items-center justify-between text-xs text-muted pt-1 border-t border-border/50">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center text-xs text-muted pt-1 border-t border-border/50">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-[2px] bg-zinc-100 border border-zinc-300 inline-block" />
-            <span>Focus (0)</span>
+            <span>Baseline</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-[2px] bg-amber-400 inline-block" />
@@ -299,10 +299,6 @@ export function HeatmapGrid({
             <span>L5</span>
           </span>
         </div>
-
-        <span className="font-mono text-xs text-muted">
-          Empty = Unrecorded / Future
-        </span>
       </div>
     </div>
   );

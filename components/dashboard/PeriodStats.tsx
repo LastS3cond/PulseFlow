@@ -161,12 +161,13 @@ export function PeriodStats({
     const tierCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
     for (let p = 0; p < firstDayOfWeek; p++) {
-      calendarCells.push({ dateStr: "", dayNum: 0, isCurrentMonth: false, incidents: [], maxTier: 0 as TierLevel, isToday: false });
+      calendarCells.push({ dateStr: "", dayNum: 0, isCurrentMonth: false, incidents: [], maxTier: 0 as TierLevel, isToday: false, isFuture: false });
     }
 
     for (let day = 1; day <= totalDaysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      const dayInc = incidentsByDate.get(dateStr) || [];
+      const isFuture = dateStr > todayStr;
+      const dayInc = isFuture ? [] : incidentsByDate.get(dateStr) || [];
       let maxTier: TierLevel = 0;
 
       if (dayInc.length > 0) {
@@ -186,6 +187,7 @@ export function PeriodStats({
         incidents: dayInc,
         maxTier,
         isToday: dateStr === todayStr,
+        isFuture,
       });
     }
 
@@ -338,12 +340,16 @@ export function PeriodStats({
               return (
                 <div
                   key={idx}
-                  onClick={() => onSelectDate && onSelectDate(cell.dateStr, cell.incidents)}
-                  className={`h-7 rounded flex flex-col items-center justify-center cursor-pointer transition-colors relative ${
-                    cell.isToday ? "ring-1 ring-accent bg-accent/10" : "bg-surface-subtle hover:bg-border/50"
+                  onClick={() => !cell.isFuture && onSelectDate && onSelectDate(cell.dateStr, cell.incidents)}
+                  className={`h-7 rounded flex flex-col items-center justify-center transition-colors relative ${
+                    cell.isFuture
+                      ? "bg-surface-subtle/30 opacity-25 cursor-default pointer-events-none"
+                      : "cursor-pointer " + (cell.isToday ? "ring-1 ring-accent bg-accent/10" : "bg-surface-subtle hover:bg-border/50")
                   }`}
                 >
-                  <span className="text-xs font-mono text-main leading-none">{cell.dayNum}</span>
+                  <span className={`text-xs font-mono leading-none ${cell.isToday ? "text-accent font-bold" : "text-main"}`}>
+                    {cell.dayNum}
+                  </span>
                   {cell.incidents.length > 0 && (
                     <span
                       className={`w-1.5 h-1.5 rounded-full absolute bottom-0.5 ${
