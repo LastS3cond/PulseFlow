@@ -144,25 +144,25 @@ export function HeatmapGrid({
     const base = "cursor-pointer transition-all duration-150 hover:scale-125 hover:z-10 ";
     const todayRing = day.isToday ? "ring-1 ring-accent" : "";
 
-    // Default logging (0 incidents) is WHITE
+    // Default logging (0 incidents) is a soft muted zinc baseline (not glaring bright white)
     if (day.incidents.length === 0) {
-      return `${base} bg-zinc-100 border border-zinc-200 hover:bg-white ${todayRing}`;
+      return `${base} bg-zinc-400/30 border border-zinc-500/30 hover:bg-zinc-300/50 ${todayRing}`;
     }
 
-    // Color-coded severity white to black
+    // Color-coded severity with sophisticated muted dark-mode tones
     switch (day.maxTier) {
       case 1:
-        return `${base} bg-amber-400 border border-amber-500 hover:bg-amber-300 ${todayRing}`;
+        return `${base} bg-amber-500/40 border border-amber-500/35 hover:bg-amber-500/60 ${todayRing}`;
       case 2:
-        return `${base} bg-orange-500 border border-orange-600 hover:bg-orange-400 ${todayRing}`;
+        return `${base} bg-orange-500/45 border border-orange-500/40 hover:bg-orange-500/65 ${todayRing}`;
       case 3:
-        return `${base} bg-red-500 border border-red-600 hover:bg-red-400 ${todayRing}`;
+        return `${base} bg-rose-500/50 border border-rose-500/40 hover:bg-rose-500/70 ${todayRing}`;
       case 4:
-        return `${base} bg-purple-600 border border-purple-700 hover:bg-purple-500 ${todayRing}`;
+        return `${base} bg-purple-500/50 border border-purple-500/40 hover:bg-purple-500/70 ${todayRing}`;
       case 5:
-        return `${base} bg-black border-2 border-white hover:bg-zinc-900 ${todayRing}`;
+        return `${base} bg-black border border-zinc-400/80 hover:bg-zinc-900 ${todayRing}`;
       default:
-        return `${base} bg-zinc-100 border border-zinc-200 ${todayRing}`;
+        return `${base} bg-zinc-400/30 border border-zinc-500/30 ${todayRing}`;
     }
   };
 
@@ -275,27 +275,27 @@ export function HeatmapGrid({
       <div className="flex items-center text-xs text-muted pt-1 border-t border-border/50">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-zinc-100 border border-zinc-300 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-zinc-400/30 border border-zinc-500/30 inline-block" />
             <span>Baseline</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-amber-400 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-amber-500/40 border border-amber-500/35 inline-block" />
             <span>L1</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-orange-500 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-orange-500/45 border border-orange-500/40 inline-block" />
             <span>L2</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-red-500 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-rose-500/50 border border-rose-500/40 inline-block" />
             <span>L3</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-purple-600 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-purple-500/50 border border-purple-500/40 inline-block" />
             <span>L4</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-black border border-white inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-black border border-zinc-400/80 inline-block" />
             <span>L5</span>
           </span>
         </div>

@@ -40,6 +40,16 @@ export function getLogicalDateForTimestamp(target: Date = new Date()): string {
 }
 
 /**
+ * Classifies whether a timestamp is "late night": 10:00 PM (22:00) and later,
+ * including overnight hours before 6:00 AM (hours >= 22 or hours < 6).
+ */
+export function isLateNight(time: string | Date = new Date()): boolean {
+  const d = new Date(time);
+  const hours = d.getHours();
+  return hours >= 22 || hours < 6;
+}
+
+/**
  * Checks if current local time is in the late-night window (12 AM - 5:59 AM).
  */
 export function isLateNightWindow(date: Date = new Date()): boolean {

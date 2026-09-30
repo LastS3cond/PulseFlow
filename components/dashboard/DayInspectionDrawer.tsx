@@ -7,6 +7,7 @@ import {
   formatDuration,
   formatLocalDate,
   formatTimeOnly,
+  isLateNight,
 } from "@/lib/telemetry/time";
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
 import { X, Clock, CheckCircle2, Shield, Moon } from "lucide-react";
@@ -140,7 +141,7 @@ export function DayInspectionDrawer({
                             <Clock className="w-3 h-3" />
                             {formatTimeOnly(inc.start_time)} – {formatTimeOnly(inc.end_time)}
                           </span>
-                          {isAwakeCycleShifted && (
+                          {isLateNight(inc.start_time) && (
                             <span className="text-amber-400 bg-amber-500/10 px-1 py-0.5 rounded flex items-center gap-1 text-[11px]">
                               <Moon className="w-3 h-3" />
                               <span>Late night</span>

@@ -7,6 +7,7 @@ import {
   formatDuration,
   formatLocalDate,
   formatTimeOnly,
+  isLateNight,
 } from "@/lib/telemetry/time";
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
 import { CheckCircle2, Shield, Moon } from "lucide-react";
@@ -82,9 +83,6 @@ export function IncidentLedger({ incidents, onSelectDate }: IncidentLedgerProps)
         <div className="flex flex-col divide-y divide-border/50">
           {filteredIncidents.map((incident) => {
             const tierInfo = TIER_CONFIG[incident.tier_level as TierLevel];
-            const startDate = new Date(incident.start_time);
-            const calendarDate = formatLocalDate(startDate);
-            const isAwakeCycleShifted = calendarDate !== incident.logical_date;
 
             return (
               <div
@@ -124,28 +122,31 @@ export function IncidentLedger({ incidents, onSelectDate }: IncidentLedgerProps)
                       <span className="font-mono">
                         {formatTimeOnly(incident.start_time)}
                       </span>
-                      {isAwakeCycleShifted && (
-                        <span
-                          title="Late night (awake-cycle shifted)"
-                          className="text-amber-400 flex items-center"
-                        >
-                          <Moon className="w-3.5 h-3.5 fill-amber-400/20" />
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
 
                 {/* Right cluster */}
                 <div className="flex items-center gap-2 shrink-0">
-                  {incident.defense_occurred && (
-                    <span
-                      title="Defended"
-                      className="p-1 rounded bg-emerald-500/10 text-emerald-400 flex items-center justify-center"
-                    >
-                      <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                    </span>
-                  )}
+                  {/* Status Badges with matching boxes */}
+                  <div className="flex items-center gap-1.5">
+                    {isLateNight(incident.start_time) && (
+                      <span
+                        title="Late night (10 PM+)"
+                        className="p-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/25 flex items-center justify-center"
+                      >
+                        <Moon className="w-3.5 h-3.5 fill-amber-400/20" />
+                      </span>
+                    )}
+                    {incident.defense_occurred && (
+                      <span
+                        title="Defended"
+                        className="p-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 flex items-center justify-center"
+                      >
+                        <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                      </span>
+                    )}
+                  </div>
 
                   <span className="text-sm font-mono font-bold text-main min-w-[36px] text-right">
                     {incident.points > 0 ? `+${incident.points}` : "0"}

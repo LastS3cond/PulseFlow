@@ -12,6 +12,16 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+function computeMedian(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 !== 0) {
+    return sorted[mid];
+  }
+  return (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [incidents, setIncidents] = useState<DashboardIncident[]>([]);
@@ -78,7 +88,7 @@ export default function AnalyticsPage() {
     return { hours, maxCount, peakWindow: bestWindow };
   }, [incidents]);
 
-  // Macro & Per-Color Weekly Averages
+  // Macro & Per-Color Weekly Averages (Option B: Median Points Baseline)
   const macroStats = useMemo(() => {
     const today = new Date();
     let start = new Date(inceptionDate);
@@ -103,6 +113,35 @@ export default function AnalyticsPage() {
     const totalIncidents = incidents.length;
     const totalPoints = incidents.reduce((sum, i) => sum + i.points, 0);
 
+    // Compute median weekly points
+    const currentSunday = new Date(today);
+    currentSunday.setDate(today.getDate() - today.getDay());
+    currentSunday.setHours(0, 0, 0, 0);
+
+    const startSunday = new Date(start);
+    startSunday.setDate(start.getDate() - start.getDay());
+    startSunday.setHours(0, 0, 0, 0);
+
+    const weekPointsMap = new Map<string, number>();
+    const iterW = new Date(startSunday);
+    while (iterW <= currentSunday) {
+      const key = `${iterW.getFullYear()}-${String(iterW.getMonth() + 1).padStart(2, "0")}-${String(iterW.getDate()).padStart(2, "0")}`;
+      weekPointsMap.set(key, 0);
+      iterW.setDate(iterW.getDate() + 7);
+    }
+
+    for (const inc of incidents) {
+      const [y, m, d] = inc.logical_date.split("-").map(Number);
+      const incDate = new Date(y, m - 1, d);
+      incDate.setDate(incDate.getDate() - incDate.getDay());
+      const key = `${incDate.getFullYear()}-${String(incDate.getMonth() + 1).padStart(2, "0")}-${String(incDate.getDate()).padStart(2, "0")}`;
+      if (weekPointsMap.has(key)) {
+        weekPointsMap.set(key, (weekPointsMap.get(key) || 0) + inc.points);
+      }
+    }
+
+    const medianWeeklyPoints = computeMedian(Array.from(weekPointsMap.values()));
+
     // Per-tier / per-color breakdown
     const tierCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     for (const inc of incidents) {
@@ -120,7 +159,8 @@ export default function AnalyticsPage() {
       totalIncidents,
       totalPoints,
       avgWeeklyIncidents: (totalIncidents / totalWeeks).toFixed(1),
-      avgWeeklyPoints: (totalPoints / totalWeeks).toFixed(1),
+      avgWeeklyPoints: medianWeeklyPoints.toFixed(1),
+      medianWeeklyPoints: medianWeeklyPoints.toFixed(1),
       tierCounts,
       tierWeeklyAverages,
       totalWeeks,
