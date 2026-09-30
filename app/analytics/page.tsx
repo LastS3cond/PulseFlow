@@ -7,9 +7,13 @@ import { DashboardIncident, getDashboardData } from "@/app/actions/incidents";
 import { HeatmapGrid } from "@/components/dashboard/HeatmapGrid";
 import { DayInspectionDrawer } from "@/components/dashboard/DayInspectionDrawer";
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
+import { useRouter } from "next/navigation";
 import {
   Clock,
   RefreshCw,
+  MoreVertical,
+  LogOut,
+  X,
 } from "lucide-react";
 
 function computeMedian(values: number[]): number {
@@ -23,13 +27,25 @@ function computeMedian(values: number[]): number {
 }
 
 export default function AnalyticsPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [incidents, setIncidents] = useState<DashboardIncident[]>([]);
   const [inceptionDate, setInceptionDate] = useState<string>(new Date().toISOString());
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [inspectingDay, setInspectingDay] = useState<{
     dateStr: string;
     incidents: DashboardIncident[];
   } | null>(null);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
 
   const loadData = useCallback(async () => {
     try {
@@ -201,12 +217,31 @@ export default function AnalyticsPage() {
               </span>
             </div>
 
+            {/* Desktop Action Buttons */}
+            <div className="hidden sm:flex items-center gap-1.5">
+              <button
+                onClick={() => loadData()}
+                title="Refresh"
+                className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main hover:bg-surface-subtle transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={handleLogout}
+                title="Sign Out"
+                className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Mobile Menu Button (Triple vertical dots) */}
             <button
-              onClick={() => loadData()}
-              title="Refresh"
-              className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main hover:bg-surface-subtle transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="sm:hidden p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main transition-colors"
+              title="More Actions"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <MoreVertical className="w-4 h-4" />
             </button>
           </div>
         </header>
@@ -242,7 +277,7 @@ export default function AnalyticsPage() {
           {/* Per-color breakdown */}
           <div className="pt-2 border-t border-border/60">
             <span className="text-xs text-muted block mb-2 font-mono">
-              Median by color / week:
+              Average by color / week:
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {([1, 2, 3, 4, 5] as (1 | 2 | 3 | 4 | 5)[]).map((tier) => {
@@ -354,6 +389,55 @@ export default function AnalyticsPage() {
             </div>
           )}
         </section>
+
+        {/* Mobile Slide-Up Action Drawer */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-end sm:hidden p-3 pb-5 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <div
+              className="w-full bg-surface border border-border rounded-2xl p-4 shadow-2xl space-y-2 animate-in slide-in-from-bottom duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-border/70">
+                <span className="text-xs font-mono uppercase font-bold text-muted">
+                  Analytics Actions
+                </span>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-1 rounded-lg text-muted hover:text-main"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-1.5 pt-1">
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    loadData();
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-surface-subtle border border-border text-main font-semibold text-xs flex items-center gap-2.5 justify-start"
+                >
+                  <RefreshCw className="w-4 h-4 text-accent" />
+                  <span>Refresh Data</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-xs flex items-center gap-2.5 justify-start"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Day Inspection Drawer */}
         <DayInspectionDrawer

@@ -436,7 +436,7 @@ export function PeriodStats({
                 <span className="text-xs font-mono font-bold text-main">{currentTierCounts[tier] || 0}</span>
               </div>
               <span className="text-xs text-muted font-mono mt-0.5">
-                median {currentTierAverages[tier] || "0.0"}
+                avg {currentTierAverages[tier] || "0.0"}
               </span>
             </div>
           ))}
