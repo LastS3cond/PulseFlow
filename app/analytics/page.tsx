@@ -231,6 +231,7 @@ export default function AnalyticsPage() {
         <section>
           <HeatmapGrid
             incidents={incidents}
+            inceptionDate={inceptionDate}
             onSelectDate={(dateStr, dayIncidents) => {
               setInspectingDay({ dateStr, incidents: dayIncidents });
             }}
