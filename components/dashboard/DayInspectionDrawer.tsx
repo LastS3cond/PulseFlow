@@ -168,16 +168,6 @@ export function DayInspectionDrawer({
             </div>
           )}
         </div>
-
-        {/* Footer */}
-        <div className="p-3 border-t border-border bg-surface-subtle/50 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-3 py-1.5 rounded-lg bg-surface border border-border text-xs text-main hover:bg-border/60"
-          >
-            Close
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -331,19 +331,19 @@ export function PeriodStats({
       </div>
 
       {/* Metrics Row */}
-      <div className="flex items-center justify-between px-1 py-0.5">
-        <div className="flex items-baseline gap-2">
-          <span className="text-xs text-muted font-mono uppercase">Incidents:</span>
-          <span className="text-lg font-bold font-mono text-main">{currentCount}</span>
-          <span className={`text-xs font-mono ${deltaCount < -0.05 ? "text-emerald-400" : deltaCount > 0.05 ? "text-amber-400" : "text-muted"}`}>
+      <div className="flex items-center justify-between gap-1 px-1 py-0.5 text-xs">
+        <div className="flex items-baseline gap-1.5 shrink-0 whitespace-nowrap">
+          <span className="text-muted font-mono uppercase text-[11px]">Incidents:</span>
+          <span className="text-base sm:text-lg font-bold font-mono text-main">{currentCount}</span>
+          <span className={`font-mono text-[11px] sm:text-xs ${deltaCount < -0.05 ? "text-emerald-400" : deltaCount > 0.05 ? "text-amber-400" : "text-muted"}`}>
             ({formatDelta(deltaCount)})
           </span>
         </div>
 
-        <div className="flex items-baseline gap-2">
-          <span className="text-xs text-muted font-mono uppercase">Points:</span>
-          <span className="text-lg font-bold font-mono text-main">{currentPoints}</span>
-          <span className={`text-xs font-mono ${deltaPoints < -0.05 ? "text-emerald-400" : deltaPoints > 0.05 ? "text-amber-400" : "text-muted"}`}>
+        <div className="flex items-baseline gap-1.5 shrink-0 whitespace-nowrap">
+          <span className="text-muted font-mono uppercase text-[11px]">Points:</span>
+          <span className="text-base sm:text-lg font-bold font-mono text-main">{currentPoints}</span>
+          <span className={`font-mono text-[11px] sm:text-xs ${deltaPoints < -0.05 ? "text-emerald-400" : deltaPoints > 0.05 ? "text-amber-400" : "text-muted"}`}>
             ({formatDelta(deltaPoints, " pts")})
           </span>
         </div>
@@ -436,7 +436,7 @@ export function PeriodStats({
                 <span className="text-xs font-mono font-bold text-main">{currentTierCounts[tier] || 0}</span>
               </div>
               <span className="text-xs text-muted font-mono mt-0.5">
-                avg {currentTierAverages[tier] || "0.0"}
+                median {currentTierAverages[tier] || "0.0"}
               </span>
             </div>
           ))}

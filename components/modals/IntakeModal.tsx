@@ -256,35 +256,35 @@ export function IntakeModal({
                 type="date"
                 value={customLogicalDate}
                 onChange={(e) => setCustomLogicalDate(e.target.value)}
-                className="mt-2 w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
+                className="mt-2 w-full max-w-full box-border bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
               />
             )}
           </div>
 
-          {/* Time Only (Date removed) - No quick tap buttons */}
+          {/* Time Only (Start & End) - Narrow inline inputs to prevent scrolling */}
           <div>
             <label className="block text-xs font-mono text-muted uppercase font-bold mb-1">
               Time
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <span className="text-xs text-muted block mb-0.5">Start</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted font-mono">Start:</span>
                 <input
                   type="time"
                   required
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
+                  className="w-24 sm:w-28 bg-surface-subtle border border-border rounded-lg px-2 py-1 text-xs text-main font-mono focus:outline-none focus:border-accent text-center"
                 />
               </div>
-              <div>
-                <span className="text-xs text-muted block mb-0.5">End</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted font-mono">End:</span>
                 <input
                   type="time"
                   required
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
+                  className="w-24 sm:w-28 bg-surface-subtle border border-border rounded-lg px-2 py-1 text-xs text-main font-mono focus:outline-none focus:border-accent text-center"
                 />
               </div>
             </div>
@@ -324,9 +324,9 @@ export function IntakeModal({
           </div>
 
           {/* Reflections */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="block text-xs font-mono text-muted uppercase font-bold">
-              Reflections (Optional)
+              Reflections
             </label>
 
             <input
@@ -338,19 +338,19 @@ export function IntakeModal({
             />
 
             <textarea
-              rows={2}
+              rows={3}
               placeholder="Context (e.g. fatigue, afternoon lull, emotional state...)"
               value={context}
               onChange={(e) => setContext(e.target.value)}
-              className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-y"
+              className="w-full h-[68px] bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-none"
             />
 
             <textarea
-              rows={2}
+              rows={3}
               placeholder="Impact (e.g. 20m delay, missed workout, disrupted flow...)"
               value={impact}
               onChange={(e) => setImpact(e.target.value)}
-              className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-y"
+              className="w-full h-[68px] bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-none"
             />
           </div>
 

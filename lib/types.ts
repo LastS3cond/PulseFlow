@@ -44,7 +44,7 @@ export const TIER_CONFIG: Record<TierLevel, TierInfo> = {
   1: {
     level: 1,
     badge: "🟨 L1",
-    title: "Peripheral Drift",
+    title: "Drift",
     definition: "Passive browsing, feed checks, brief curiosity clicks.",
     basePoints: 1,
     resetImpact: "Resets L1",

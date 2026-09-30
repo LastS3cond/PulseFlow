@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { DashboardIncident, getDashboardData } from "@/app/actions/incidents";
 import { HeatmapGrid } from "@/components/dashboard/HeatmapGrid";
 import { DayInspectionDrawer } from "@/components/dashboard/DayInspectionDrawer";
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
 import {
-  ArrowLeft,
   Clock,
   RefreshCw,
 } from "lucide-react";
@@ -171,44 +171,51 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-bg text-main">
       <div className="max-w-[760px] mx-auto px-3.5 sm:px-4 py-4 sm:py-6 flex flex-col gap-4">
-        {/* Top Header */}
-        <header className="flex items-center justify-between gap-3 pb-3 border-b border-border/70">
-          <div className="flex items-center gap-2.5">
-            <Link
-              href="/"
-              className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main transition-colors"
-              title="Return"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-            <h1 className="text-base font-bold text-main">Analytics</h1>
+        {/* Top Header - Kept identical to dashboard */}
+        <header className="flex items-center justify-between gap-2 pb-3 border-b border-border/70">
+          {/* Brand & Trajectory Icon */}
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-surface border border-border p-0.5 flex items-center justify-center shrink-0">
+              <Image
+                src="/icon.svg"
+                alt="Trajectory"
+                width={20}
+                height={20}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <h1 className="text-base font-bold tracking-tight text-main">Trajectory</h1>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="px-2.5 py-1 rounded-md text-xs font-semibold text-muted hover:text-main transition-colors"
-            >
-              Telemetry
-            </Link>
-            <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-accent text-zinc-950">
-              Analytics
-            </span>
+          {/* Navigation & Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center p-0.5 rounded-lg bg-surface-subtle border border-border text-xs">
+              <Link
+                href="/"
+                className="px-2 py-0.5 rounded-md font-semibold text-muted hover:text-main transition-colors"
+              >
+                Telemetry
+              </Link>
+              <span className="px-2 py-0.5 rounded-md font-bold bg-accent text-zinc-950">
+                Analytics
+              </span>
+            </div>
+
             <button
               onClick={() => loadData()}
               title="Refresh"
-              className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main transition-colors"
+              className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main hover:bg-surface-subtle transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
           </div>
         </header>
 
-        {/* 1. Historical Weekly Averages (Total & Per-Color) */}
+        {/* 1. Historical Weekly Medians (Total & Per-Color) */}
         <section className="bg-surface rounded-xl border border-border p-3.5 sm:p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-mono uppercase tracking-wider text-muted font-bold">
-              Weekly Averages
+              Weekly Medians
             </h2>
             <span className="text-xs font-mono text-muted">
               {macroStats.totalWeeks} {macroStats.totalWeeks === 1 ? "week" : "weeks"} tracked
@@ -225,7 +232,7 @@ export default function AnalyticsPage() {
             </div>
             <div className="h-8 w-px bg-border/60" />
             <div>
-              <span className="text-xs text-muted block">Points / Week</span>
+              <span className="text-xs text-muted block">Points / Week (Median)</span>
               <span className="text-2xl font-bold font-mono text-main">
                 {macroStats.avgWeeklyPoints}
               </span>
@@ -235,7 +242,7 @@ export default function AnalyticsPage() {
           {/* Per-color breakdown */}
           <div className="pt-2 border-t border-border/60">
             <span className="text-xs text-muted block mb-2 font-mono">
-              Average by color / week:
+              Median by color / week:
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {([1, 2, 3, 4, 5] as (1 | 2 | 3 | 4 | 5)[]).map((tier) => {
