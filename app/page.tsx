@@ -82,11 +82,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-bg text-main">
-      <div className="max-w-[640px] md:max-w-[760px] mx-auto px-3.5 sm:px-4 py-4 sm:py-6 flex flex-col gap-4">
+      <div className="max-w-[640px] md:max-w-[760px] mx-auto px-3.5 sm:px-4 py-4 sm:py-6 flex flex-col gap-3.5">
         {/* Top Header */}
         <header className="flex items-center justify-between gap-2 pb-3 border-b border-border/70">
           <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_#10b981]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_#10b981]" />
             <h1 className="text-base font-bold tracking-tight text-main">PulseFlow</h1>
 
             {/* Navigation Switcher */}
@@ -166,9 +166,15 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* 1. Period Stats: Week / Month with deltas and swipe navigation */}
+        {/* 1. Period Stats with Calendar & Per-Color Averages */}
         <section>
-          <PeriodStats incidents={incidents} inceptionDate={inceptionDate} />
+          <PeriodStats
+            incidents={incidents}
+            inceptionDate={inceptionDate}
+            onSelectDate={(dateStr, dayIncidents) => {
+              setInspectingDay({ dateStr, incidents: dayIncidents });
+            }}
+          />
         </section>
 
         {/* 2. Compact Streaks Bar */}

@@ -9,11 +9,6 @@ import { TIER_CONFIG, TierLevel } from "@/lib/types";
 import {
   ArrowLeft,
   Clock,
-  BarChart3,
-  Calendar,
-  Shield,
-  Zap,
-  TrendingDown,
   RefreshCw,
 } from "lucide-react";
 
@@ -42,7 +37,7 @@ export default function AnalyticsPage() {
     loadData();
   }, [loadData]);
 
-  // Hourly Vulnerability Distribution ("Average Time I Fail")
+  // Hourly Distribution ("Daily incident patterns" - "Measured by the hour")
   const hourlyData = useMemo(() => {
     const hours = Array.from({ length: 24 }, (_, i) => ({
       hour: i,
@@ -69,7 +64,6 @@ export default function AnalyticsPage() {
 
     const maxCount = Math.max(1, ...hours.map((h) => h.count));
 
-    // Find peak 3-hour vulnerability window
     let bestWindow = { startHour: 0, count: 0 };
     for (let i = 0; i < 24; i++) {
       const windowSum =
@@ -84,7 +78,7 @@ export default function AnalyticsPage() {
     return { hours, maxCount, peakWindow: bestWindow };
   }, [incidents]);
 
-  // Macro Averages
+  // Macro & Per-Color Weekly Averages
   const macroStats = useMemo(() => {
     const today = new Date();
     let start = new Date(inceptionDate);
@@ -108,119 +102,150 @@ export default function AnalyticsPage() {
 
     const totalIncidents = incidents.length;
     const totalPoints = incidents.reduce((sum, i) => sum + i.points, 0);
-    const defendedCount = incidents.filter((i) => i.defense_occurred).length;
-    const defenseRate =
-      totalIncidents > 0
-        ? Math.round((defendedCount / totalIncidents) * 100)
-        : 100;
+
+    // Per-tier / per-color breakdown
+    const tierCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    for (const inc of incidents) {
+      if (tierCounts[inc.tier_level] !== undefined) {
+        tierCounts[inc.tier_level]++;
+      }
+    }
+
+    const tierWeeklyAverages: Record<number, string> = {};
+    for (let t = 1; t <= 5; t++) {
+      tierWeeklyAverages[t] = (tierCounts[t] / totalWeeks).toFixed(1);
+    }
 
     return {
       totalIncidents,
       totalPoints,
-      defendedCount,
-      defenseRate,
       avgWeeklyIncidents: (totalIncidents / totalWeeks).toFixed(1),
       avgWeeklyPoints: (totalPoints / totalWeeks).toFixed(1),
-      avgMonthlyIncidents: (totalIncidents / totalMonths).toFixed(1),
-      avgMonthlyPoints: (totalPoints / totalMonths).toFixed(1),
+      tierCounts,
+      tierWeeklyAverages,
+      totalWeeks,
       totalDaysTracked: diffDays,
     };
   }, [incidents, inceptionDate]);
 
   return (
     <div className="min-h-screen bg-bg text-main">
-      <div className="max-w-[960px] mx-auto px-4 py-5 sm:py-7 flex flex-col gap-6">
+      <div className="max-w-[760px] mx-auto px-3.5 sm:px-4 py-4 sm:py-6 flex flex-col gap-4">
         {/* Top Header */}
-        <header className="flex items-center justify-between gap-3 pb-4 border-b border-border">
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between gap-3 pb-3 border-b border-border/70">
+          <div className="flex items-center gap-2.5">
             <Link
               href="/"
-              className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main hover:bg-surface-subtle transition-colors"
-              title="Return to Telemetry"
+              className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main transition-colors"
+              title="Return"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
-            <div>
-              <h1 className="text-base sm:text-lg font-bold text-main">Analytics</h1>
-              <p className="text-xs text-muted">Averages, vulnerability patterns, and heatmaps</p>
-            </div>
+            <h1 className="text-base font-bold text-main">Analytics</h1>
           </div>
 
           <div className="flex items-center gap-2">
             <Link
               href="/"
-              className="px-3 py-1 rounded-md text-xs font-semibold text-muted hover:text-main transition-colors"
+              className="px-2.5 py-1 rounded-md text-xs font-semibold text-muted hover:text-main transition-colors"
             >
               Telemetry
             </Link>
-            <span className="px-3 py-1 rounded-md text-xs font-bold bg-accent text-zinc-950">
+            <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-accent text-zinc-950">
               Analytics
             </span>
             <button
               onClick={() => loadData()}
-              title="Refresh Analytics"
-              className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main transition-colors ml-1"
+              title="Refresh"
+              className="p-1.5 rounded-lg bg-surface border border-border text-muted hover:text-main transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
           </div>
         </header>
 
-        {/* 1. Macro Averages Cards */}
-        <section className="space-y-2">
-          <h2 className="text-xs font-mono uppercase tracking-wider text-muted font-bold">
-            Historical Averages
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div className="p-3 rounded-xl bg-surface border border-border">
-              <span className="text-[11px] font-mono text-muted uppercase">Avg Weekly</span>
-              <div className="text-xl font-mono font-bold text-main mt-1">
-                {macroStats.avgWeeklyIncidents}{" "}
-                <span className="text-xs text-muted font-normal font-sans">events</span>
-              </div>
-              <span className="text-[11px] font-mono text-muted">{macroStats.avgWeeklyPoints} pts / wk</span>
-            </div>
+        {/* 1. Historical Weekly Averages (Total & Per-Color) */}
+        <section className="bg-surface rounded-xl border border-border p-3.5 sm:p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-mono uppercase tracking-wider text-muted font-bold">
+              Weekly Averages
+            </h2>
+            <span className="text-xs font-mono text-muted">
+              {macroStats.totalWeeks} {macroStats.totalWeeks === 1 ? "week" : "weeks"} tracked
+            </span>
+          </div>
 
-            <div className="p-3 rounded-xl bg-surface border border-border">
-              <span className="text-[11px] font-mono text-muted uppercase">Avg Monthly</span>
-              <div className="text-xl font-mono font-bold text-main mt-1">
-                {macroStats.avgMonthlyIncidents}{" "}
-                <span className="text-xs text-muted font-normal font-sans">events</span>
-              </div>
-              <span className="text-[11px] font-mono text-muted">{macroStats.avgMonthlyPoints} pts / mo</span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-surface border border-border">
-              <span className="text-[11px] font-mono text-muted uppercase">Defense Rate</span>
-              <div className="text-xl font-mono font-bold text-emerald-400 mt-1">
-                {macroStats.defenseRate}%
-              </div>
-              <span className="text-[11px] font-mono text-muted">
-                {macroStats.defendedCount} of {macroStats.totalIncidents} defended
+          {/* Overall summary numbers */}
+          <div className="flex items-center gap-4 py-1">
+            <div>
+              <span className="text-xs text-muted block">Events / Week</span>
+              <span className="text-2xl font-bold font-mono text-main">
+                {macroStats.avgWeeklyIncidents}
               </span>
             </div>
+            <div className="h-8 w-px bg-border/60" />
+            <div>
+              <span className="text-xs text-muted block">Points / Week</span>
+              <span className="text-2xl font-bold font-mono text-main">
+                {macroStats.avgWeeklyPoints}
+              </span>
+            </div>
+          </div>
 
-            <div className="p-3 rounded-xl bg-surface border border-border">
-              <span className="text-[11px] font-mono text-muted uppercase">Lifetime Points</span>
-              <div className="text-xl font-mono font-bold text-main mt-1">
-                {macroStats.totalPoints}
-              </div>
-              <span className="text-[11px] font-mono text-muted">{macroStats.totalDaysTracked} days tracked</span>
+          {/* Per-color breakdown */}
+          <div className="pt-2 border-t border-border/60">
+            <span className="text-xs text-muted block mb-2 font-mono">
+              Average by color / week:
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {([1, 2, 3, 4, 5] as (1 | 2 | 3 | 4 | 5)[]).map((tier) => {
+                const info = TIER_CONFIG[tier];
+                const avg = macroStats.tierWeeklyAverages[tier];
+                const count = macroStats.tierCounts[tier];
+
+                return (
+                  <div
+                    key={tier}
+                    className="p-2 rounded-lg bg-surface-subtle border border-border flex flex-col justify-between"
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span
+                        className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${info.colorClass}`}
+                      >
+                        L{tier}
+                      </span>
+                      <span className="text-xs text-muted font-mono">{count} total</span>
+                    </div>
+                    <div className="mt-2">
+                      <span className="text-base font-bold font-mono text-main">{avg}</span>
+                      <span className="text-xs text-muted font-mono ml-1">/wk</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* 2. Diurnal Vulnerability ("Average Time I Fail") */}
-        <section className="p-4 sm:p-5 rounded-xl bg-surface border border-border space-y-4">
+        {/* 2. 52-Week Yearly Heatmap (Placed ABOVE Daily incident patterns as requested) */}
+        <section>
+          <HeatmapGrid
+            incidents={incidents}
+            onSelectDate={(dateStr, dayIncidents) => {
+              setInspectingDay({ dateStr, incidents: dayIncidents });
+            }}
+          />
+        </section>
+
+        {/* 3. Daily incident patterns ("Measured by the hour") */}
+        <section className="bg-surface rounded-xl border border-border p-3.5 sm:p-4 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-sm font-bold text-main flex items-center gap-2">
+              <h2 className="text-sm font-bold text-main flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-accent" />
-                <span>Diurnal Vulnerability Pattern</span>
+                <span>Daily incident patterns</span>
               </h2>
-              <p className="text-xs text-muted">
-                Hourly frequency of divergence across 24-hour cycles.
-              </p>
+              <p className="text-xs text-muted">Measured by the hour</p>
             </div>
 
             {incidents.length > 0 && hourlyData.peakWindow.count > 0 && (
@@ -235,14 +260,13 @@ export default function AnalyticsPage() {
             )}
           </div>
 
-          {/* 24-Hour Bar Plot */}
           {incidents.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted">
-              No divergence incidents logged. Pure focus baseline intact.
+            <div className="py-6 text-center text-xs text-muted">
+              No incidents logged.
             </div>
           ) : (
             <div className="pt-2">
-              <div className="h-32 flex items-end gap-1 sm:gap-1.5 w-full">
+              <div className="h-28 flex items-end gap-1 sm:gap-1.5 w-full">
                 {hourlyData.hours.map((h) => {
                   const pct = (h.count / hourlyData.maxCount) * 100;
                   const hasData = h.count > 0;
@@ -251,17 +275,15 @@ export default function AnalyticsPage() {
                       key={h.hour}
                       className="flex-1 h-full flex flex-col justify-end items-center group relative"
                     >
-                      {/* Tooltip */}
-                      <div className="absolute -top-9 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
-                        <div className="bg-surface-elevated border border-border px-2 py-0.5 rounded text-[10px] font-mono text-main whitespace-nowrap shadow-lg">
-                          {h.label}: {h.count} event{h.count === 1 ? "" : "s"} ({h.points} pts)
+                      <div className="absolute -top-8 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
+                        <div className="bg-surface-elevated border border-border px-2 py-0.5 rounded text-xs font-mono text-main whitespace-nowrap shadow-lg">
+                          {h.label}: {h.count} ({h.points} pts)
                         </div>
                       </div>
 
-                      {/* Bar */}
                       <div
-                        style={{ height: hasData ? `${Math.max(12, pct)}%` : "3px" }}
-                        className={`w-full rounded-t-sm transition-all duration-200 ${
+                        style={{ height: hasData ? `${Math.max(10, pct)}%` : "3px" }}
+                        className={`w-full rounded-t-sm transition-all duration-150 ${
                           hasData
                             ? "bg-accent/70 hover:bg-accent group-hover:scale-y-105"
                             : "bg-surface-subtle"
@@ -272,8 +294,7 @@ export default function AnalyticsPage() {
                 })}
               </div>
 
-              {/* X-axis labels */}
-              <div className="flex justify-between text-[10px] font-mono text-muted mt-2 px-1">
+              <div className="flex justify-between text-xs font-mono text-muted mt-2 px-1">
                 <span>12 AM</span>
                 <span>4 AM</span>
                 <span>8 AM</span>
@@ -286,17 +307,7 @@ export default function AnalyticsPage() {
           )}
         </section>
 
-        {/* 3. 52-Week Heatmap */}
-        <section>
-          <HeatmapGrid
-            incidents={incidents}
-            onSelectDate={(dateStr, dayIncidents) => {
-              setInspectingDay({ dateStr, incidents: dayIncidents });
-            }}
-          />
-        </section>
-
-        {/* Inspection Drawer */}
+        {/* Day Inspection Drawer */}
         <DayInspectionDrawer
           dateStr={inspectingDay?.dateStr || null}
           incidents={inspectingDay?.incidents || []}

@@ -12,7 +12,7 @@ interface HeatmapGridProps {
 
 interface DayData {
   dateStr: string;
-  dayOfWeek: number; // 0=Sun, 1=Mon, ..., 6=Sat
+  dayOfWeek: number;
   incidents: DashboardIncident[];
   maxTier: TierLevel;
   totalPoints: number;
@@ -21,7 +21,6 @@ interface DayData {
 }
 
 export function HeatmapGrid({ incidents, onSelectDate }: HeatmapGridProps) {
-  // Group incidents by logical_date
   const incidentsByDate = useMemo(() => {
     const map = new Map<string, DashboardIncident[]>();
     for (const inc of incidents) {
@@ -32,17 +31,14 @@ export function HeatmapGrid({ incidents, onSelectDate }: HeatmapGridProps) {
     return map;
   }, [incidents]);
 
-  // Generate 52 weeks of dates ending today
   const { weeks, monthLabels } = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // End on the coming Saturday of this week
     const endOfWeek = new Date(today);
     const dayOfWeek = today.getDay();
     endOfWeek.setDate(today.getDate() + (6 - dayOfWeek));
 
-    // 53 weeks back to ensure 52 full weeks + current week
     const numWeeks = 53;
     const startDate = new Date(endOfWeek);
     startDate.setDate(endOfWeek.getDate() - (numWeeks * 7 - 1));
@@ -67,7 +63,6 @@ export function HeatmapGrid({ incidents, onSelectDate }: HeatmapGridProps) {
           totalPoints = dayIncidents.reduce((sum, i) => sum + i.points, 0);
         }
 
-        // Track month label at start of month
         if (d === 0 && iter.getMonth() !== currentMonth) {
           currentMonth = iter.getMonth();
           months.push({
@@ -94,7 +89,6 @@ export function HeatmapGrid({ incidents, onSelectDate }: HeatmapGridProps) {
     return { weeks: weeksArray, monthLabels: months };
   }, [incidentsByDate]);
 
-  // Color mapping for cell tier
   const getCellClasses = (day: DayData) => {
     if (day.isFuture) {
       return "bg-transparent border border-dashed border-border/20 cursor-default opacity-20";
@@ -120,28 +114,22 @@ export function HeatmapGrid({ incidents, onSelectDate }: HeatmapGridProps) {
   };
 
   return (
-    <div className="bg-surface rounded-xl border border-border p-4 md:p-5 flex flex-col gap-4">
+    <div className="bg-surface rounded-xl border border-border p-4 flex flex-col gap-3">
       {/* Header and stats */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-bold text-main flex items-center gap-2">
-            <span>52-Week Operational Heatmap</span>
-            <span className="text-[11px] font-mono text-muted font-normal">
-              (Awake-Cycle Logic)
-            </span>
-          </h2>
+          <h2 className="text-sm font-bold text-main">Yearly heatmap</h2>
           <p className="text-xs text-muted">
-            Uninterrupted focus defaults implicitly to Level 0. Pips reflect highest daily divergence tier.
+            Severity is color-coded white to black. Pips reflect incident amount
           </p>
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-2 text-[11px]">
-          <span className="text-muted font-mono">Legend:</span>
+        <div className="flex items-center gap-1.5 text-xs font-mono">
           {([0, 1, 2, 3, 4, 5] as TierLevel[]).map((tier) => (
             <span
               key={tier}
-              className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold ${TIER_CONFIG[tier].colorClass}`}
+              className={`px-1.5 py-0.5 rounded font-bold ${TIER_CONFIG[tier].colorClass}`}
             >
               L{tier}
             </span>
@@ -149,11 +137,11 @@ export function HeatmapGrid({ incidents, onSelectDate }: HeatmapGridProps) {
         </div>
       </div>
 
-      {/* Rolling Calendar Container */}
+      {/* Calendar Grid Container */}
       <div className="overflow-x-auto pb-2 pt-1 scrollbar-thin">
-        <div className="min-w-[780px]">
+        <div className="min-w-[760px]">
           {/* Month labels */}
-          <div className="flex text-[10px] text-muted font-mono mb-1.5 ml-6">
+          <div className="flex text-xs text-muted font-mono mb-1.5 ml-6">
             {monthLabels.map((m, idx) => (
               <div
                 key={idx}
@@ -167,11 +155,11 @@ export function HeatmapGrid({ incidents, onSelectDate }: HeatmapGridProps) {
 
           <div className="flex gap-1">
             {/* Day of week labels */}
-            <div className="flex flex-col justify-between text-[9px] text-muted font-mono pr-1 select-none py-0.5 h-[104px]">
-              <span>Sun</span>
-              <span>Tue</span>
-              <span>Thu</span>
-              <span>Sat</span>
+            <div className="flex flex-col justify-between text-xs text-muted font-mono pr-1 select-none py-0.5 h-[104px]">
+              <span>S</span>
+              <span>T</span>
+              <span>T</span>
+              <span>S</span>
             </div>
 
             {/* Weeks columns */}
@@ -185,9 +173,7 @@ export function HeatmapGrid({ incidents, onSelectDate }: HeatmapGridProps) {
                       title={`${formatDisplayDate(day.dateStr)}: ${
                         day.incidents.length === 0
                           ? "L0 Pure Focus"
-                          : `L${day.maxTier} ${TIER_CONFIG[day.maxTier].title} (${day.incidents.length} event${
-                              day.incidents.length > 1 ? "s" : ""
-                            }, ${day.totalPoints} pts)`
+                          : `L${day.maxTier} (${day.incidents.length} events, ${day.totalPoints} pts)`
                       }`}
                       className={`w-full aspect-square rounded-[3px] ${getCellClasses(day)}`}
                     />

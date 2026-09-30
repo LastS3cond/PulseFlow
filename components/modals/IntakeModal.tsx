@@ -18,7 +18,6 @@ import {
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
 import {
   X,
-  Shield,
   Send,
   Loader2,
   AlertTriangle,
@@ -171,7 +170,7 @@ export function IntakeModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 border-b border-border flex items-center justify-between">
+        <div className="p-3.5 border-b border-border flex items-center justify-between">
           <h2 className="text-sm font-bold text-main">Log Incident</h2>
           <button
             onClick={onClose}
@@ -182,7 +181,7 @@ export function IntakeModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 overflow-y-auto space-y-3.5">
+        <form onSubmit={handleSubmit} className="p-3.5 sm:p-4 overflow-y-auto space-y-3">
           {errorMessage && (
             <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -192,7 +191,7 @@ export function IntakeModal({
 
           {/* Tier Selector */}
           <div>
-            <label className="block text-[11px] font-mono text-muted uppercase font-bold mb-1.5">
+            <label className="block text-xs font-mono text-muted uppercase font-bold mb-1">
               Tier
             </label>
             <div className="grid grid-cols-5 gap-1.5">
@@ -211,7 +210,7 @@ export function IntakeModal({
                     }`}
                   >
                     <div className="font-mono font-bold text-xs">L{t}</div>
-                    <div className="text-[10px] truncate leading-tight mt-0.5 opacity-90">
+                    <div className="text-xs truncate leading-tight mt-0.5 opacity-90">
                       {info.title.split(" ")[0]}
                     </div>
                   </button>
@@ -222,7 +221,7 @@ export function IntakeModal({
 
           {/* Date Selector */}
           <div>
-            <label className="block text-[11px] font-mono text-muted uppercase font-bold mb-1">
+            <label className="block text-xs font-mono text-muted uppercase font-bold mb-1">
               Date
             </label>
             <div className="flex items-center gap-1.5">
@@ -274,8 +273,8 @@ export function IntakeModal({
           {/* Timestamps */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-[11px] font-mono text-muted uppercase font-bold">
-                Time Window
+              <label className="text-xs font-mono text-muted uppercase font-bold">
+                Time
               </label>
               <div className="flex items-center gap-1">
                 {[15, 30, 45, 60].map((mins) => (
@@ -283,7 +282,7 @@ export function IntakeModal({
                     key={mins}
                     type="button"
                     onClick={() => applyDuration(mins)}
-                    className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-subtle border border-border text-muted hover:text-main"
+                    className="text-xs font-mono px-1.5 py-0.5 rounded bg-surface-subtle border border-border text-muted hover:text-main"
                   >
                     {mins}m
                   </button>
@@ -309,7 +308,7 @@ export function IntakeModal({
             </div>
           </div>
 
-          {/* Defense Toggle */}
+          {/* Defended Toggle: "Defended?" w/o shield, Surge and (-1 pts) removed */}
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface-subtle border border-border">
             <div className="flex items-center gap-2.5">
               <button
@@ -325,29 +324,22 @@ export function IntakeModal({
                   }`}
                 />
               </button>
-              <div>
-                <div className="text-xs font-semibold text-main flex items-center gap-1">
-                  <span>Defended</span>
-                  {defended && <Shield className="w-3 h-3 text-emerald-400" />}
-                </div>
-                <div className="text-[10px] text-muted">
-                  {defended ? `Active defense (-${tierLevel === 1 ? 1 : 2} pts)` : "Surge"}
-                </div>
-              </div>
+              <span className="text-xs font-semibold text-main">Defended?</span>
             </div>
 
             <div className="text-right">
-              <div className="text-xs font-mono font-bold text-main">
+              <span className="text-xs font-mono font-bold text-main">
                 {livePoints > 0 ? `+${livePoints} pts` : "0 pts"}
-              </div>
+              </span>
             </div>
           </div>
 
-          {/* Reflections */}
+          {/* Reflections - Bigger Textboxes for Context and Impact */}
           <div className="space-y-2">
-            <label className="block text-[11px] font-mono text-muted uppercase font-bold">
+            <label className="block text-xs font-mono text-muted uppercase font-bold">
               Reflections (Optional)
             </label>
+
             <input
               type="text"
               placeholder="Pathway (e.g. video loop, tech feed)"
@@ -355,22 +347,22 @@ export function IntakeModal({
               onChange={(e) => setPathway(e.target.value)}
               className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent"
             />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                placeholder="Context (e.g. fatigue)"
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent"
-              />
-              <input
-                type="text"
-                placeholder="Impact (e.g. 20m delay)"
-                value={impact}
-                onChange={(e) => setImpact(e.target.value)}
-                className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent"
-              />
-            </div>
+
+            <textarea
+              rows={2}
+              placeholder="Context (e.g. fatigue, afternoon lull, emotional state...)"
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+              className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-y"
+            />
+
+            <textarea
+              rows={2}
+              placeholder="Impact (e.g. 20m delay, missed workout, disrupted flow...)"
+              value={impact}
+              onChange={(e) => setImpact(e.target.value)}
+              className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-y"
+            />
           </div>
 
           {/* Actions */}
@@ -389,12 +381,12 @@ export function IntakeModal({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>Saving...</span>
                 </>
               ) : (
                 <>
-                  <Send className="w-3 h-3" />
+                  <Send className="w-3.5 h-3.5" />
                   <span>Save</span>
                 </>
               )}
