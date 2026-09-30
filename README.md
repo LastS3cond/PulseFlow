@@ -7,9 +7,7 @@ Trajectory is a single-user, mobile-first Progressive Web Application (PWA) buil
 
 ---
 
-## 1. Operational Directives & Innocence Framing
-
-All schema definitions, application labels, and export formats strictly employ neutral productivity and software engineering terminology. An external reviewer or repository visitor perceives the tool solely as a digital distraction and screen-time hygiene tracker.
+## 1. Operational Directives
 
 - **Implicit Baseline Logging**: Days with zero logged events implicitly default to **Level 0 (Pure Focus)**. Uninterrupted focus requires zero manual logging.
 - **Dual-Password Isolation Model**:
