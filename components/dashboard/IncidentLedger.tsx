@@ -9,7 +9,7 @@ import {
   formatTimeOnly,
 } from "@/lib/telemetry/time";
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
-import { Trash2, CheckCircle2 } from "lucide-react";
+import { Trash2, CheckCircle2, Shield } from "lucide-react";
 
 interface IncidentLedgerProps {
   incidents: DashboardIncident[];
@@ -142,8 +142,9 @@ export function IncidentLedger({ incidents, onSelectDate, onRefresh }: IncidentL
                 {/* Right cluster */}
                 <div className="flex items-center gap-2 shrink-0">
                   {incident.defense_occurred && (
-                    <span className="text-xs text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono">
-                      Defended
+                    <span className="text-xs text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono flex items-center gap-1">
+                      <Shield className="w-3 h-3 text-emerald-400" />
+                      <span>Defended</span>
                     </span>
                   )}
 

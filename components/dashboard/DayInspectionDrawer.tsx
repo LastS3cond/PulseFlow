@@ -8,7 +8,7 @@ import {
   formatTimeOnly,
 } from "@/lib/telemetry/time";
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
-import { X, Clock, CheckCircle2 } from "lucide-react";
+import { X, Clock, CheckCircle2, Shield } from "lucide-react";
 
 interface DayInspectionDrawerProps {
   dateStr: string | null;
@@ -136,7 +136,10 @@ export function DayInspectionDrawer({
                         {inc.points > 0 ? `+${inc.points}` : "0"}
                       </div>
                       {inc.defense_occurred ? (
-                        <div className="text-xs text-emerald-400 font-mono">Defended</div>
+                        <div className="text-xs text-emerald-400 font-mono flex items-center gap-1 justify-end">
+                          <Shield className="w-2.5 h-2.5" />
+                          <span>Defended</span>
+                        </div>
                       ) : null}
                     </div>
                   </div>

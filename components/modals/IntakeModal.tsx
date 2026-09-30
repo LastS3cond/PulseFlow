@@ -18,6 +18,7 @@ import {
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
 import {
   X,
+  Shield,
   Send,
   Loader2,
   AlertTriangle,
@@ -308,7 +309,7 @@ export function IntakeModal({
             </div>
           </div>
 
-          {/* Defended Toggle: "Defended?" w/o shield, Surge and (-1 pts) removed */}
+          {/* Defended Toggle: Defended? if off, Defended (shield icon) if on */}
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface-subtle border border-border">
             <div className="flex items-center gap-2.5">
               <button
@@ -324,7 +325,14 @@ export function IntakeModal({
                   }`}
                 />
               </button>
-              <span className="text-xs font-semibold text-main">Defended?</span>
+              {defended ? (
+                <span className="text-xs font-semibold text-main flex items-center gap-1">
+                  <span>Defended</span>
+                  <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                </span>
+              ) : (
+                <span className="text-xs font-semibold text-muted">Defended?</span>
+              )}
             </div>
 
             <div className="text-right">
