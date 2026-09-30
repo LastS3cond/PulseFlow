@@ -1,9 +1,9 @@
-# PulseFlow
+# Trajectory
 
 > Objective Deep-Work Telemetry & Protocol Discipline Engine  
 > Next.js 15 PWA • Supabase PostgreSQL • Asymmetric Envelope Cryptography
 
-PulseFlow is a single-user, mobile-first Progressive Web Application (PWA) built to log deep-work flow states, digital rabbit holes, and protocol discipline using an objective telemetry engine.
+Trajectory is a single-user, mobile-first Progressive Web Application (PWA) built to log deep-work flow states, digital rabbit holes, and protocol discipline using an objective telemetry engine.
 
 ---
 

@@ -36,7 +36,7 @@ export function ExportModal({
   encryptedPrivateKey,
 }: ExportModalProps) {
   const [password2, setPassword2] = useState<string>("");
-  const [timeframe, setTimeframe] = useState<"all" | "90d" | "30d" | "7d">("all");
+  const [timeframe, setTimeframe] = useState<"all" | "90d" | "30d">("all");
   const [isDecrypting, setIsDecrypting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [generatedPayload, setGeneratedPayload] = useState<string | null>(null);
@@ -69,10 +69,7 @@ export function ExportModal({
 
       let startDate: string | undefined;
       const now = new Date();
-      if (timeframe === "7d") {
-        const d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        startDate = d.toISOString().split("T")[0];
-      } else if (timeframe === "30d") {
+      if (timeframe === "30d") {
         const d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         startDate = d.toISOString().split("T")[0];
       } else if (timeframe === "90d") {
@@ -186,12 +183,11 @@ export function ExportModal({
                 <label className="block text-[11px] font-mono text-muted uppercase font-bold mb-1.5">
                   Timeframe
                 </label>
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-3 gap-1.5">
                   {[
                     { id: "all", label: "All" },
                     { id: "90d", label: "90d" },
                     { id: "30d", label: "30d" },
-                    { id: "7d", label: "7d" },
                   ].map((t) => (
                     <button
                       key={t.id}

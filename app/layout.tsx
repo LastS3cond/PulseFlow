@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PulseFlow — Protocol Discipline & Telemetry Engine",
-  description: "Next.js 15 PWA with Supabase PostgreSQL & Asymmetric Envelope Cryptography",
+  title: "Trajectory — Protocol Discipline Engine",
+  description: "Objective Deep Work Telemetry & Protocol Discipline Engine",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",

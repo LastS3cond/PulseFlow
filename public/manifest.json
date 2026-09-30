@@ -1,6 +1,6 @@
 {
-  "name": "PulseFlow — Protocol Discipline Telemetry",
-  "short_name": "PulseFlow",
+  "name": "Trajectory — Protocol Discipline Engine",
+  "short_name": "Trajectory",
   "description": "Objective Deep Work Telemetry & Protocol Discipline Engine",
   "start_url": "/",
   "display": "standalone",

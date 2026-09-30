@@ -57,15 +57,11 @@ export function IntakeModal({
     const now = new Date();
     const fifteenMinsAgo = new Date(now.getTime() - 15 * 60 * 1000);
 
-    const toLocalDatetime = (d: Date) => {
-      const pad = (n: number) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-        d.getHours()
-      )}:${pad(d.getMinutes())}`;
-    };
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const toTimeOnly = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
-    setStartTime(toLocalDatetime(fifteenMinsAgo));
-    setEndTime(toLocalDatetime(now));
+    setStartTime(toTimeOnly(fifteenMinsAgo));
+    setEndTime(toTimeOnly(now));
 
     if (isLateNightWindow(now)) {
       setLogicalDateChoice("yesterday");
@@ -89,17 +85,6 @@ export function IntakeModal({
   const livePoints = calculateIncidentPoints(tierLevel, defended);
   const liveSurge = deriveSurgeOccurred(defended);
 
-  const applyDuration = (minutes: number) => {
-    const end = endTime ? new Date(endTime) : new Date();
-    const start = new Date(end.getTime() - minutes * 60 * 1000);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    setStartTime(
-      `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}T${pad(
-        start.getHours()
-      )}:${pad(start.getMinutes())}`
-    );
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -110,16 +95,21 @@ export function IntakeModal({
     }
 
     if (!startTime || !endTime) {
-      setErrorMessage("Start and end timestamps are required.");
+      setErrorMessage("Start and end times are required.");
       return;
     }
 
-    const startObj = new Date(startTime);
-    const endObj = new Date(endTime);
+    // Combine resolved date with time
+    const [sh, sm] = startTime.split(":").map(Number);
+    const [eh, em] = endTime.split(":").map(Number);
+    const [yr, mo, da] = resolvedLogicalDate.split("-").map(Number);
 
+    const startObj = new Date(yr, mo - 1, da, sh, sm);
+    let endObj = new Date(yr, mo - 1, da, eh, em);
+
+    // If end time is earlier than start time, it crossed midnight into next day
     if (endObj.getTime() < startObj.getTime()) {
-      setErrorMessage("End time cannot be earlier than start time.");
-      return;
+      endObj = new Date(endObj.getTime() + 86400000);
     }
 
     setIsSubmitting(true);
@@ -271,41 +261,32 @@ export function IntakeModal({
             )}
           </div>
 
-          {/* Timestamps */}
+          {/* Time Only (Date removed) - No quick tap buttons */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-mono text-muted uppercase font-bold">
-                Time
-              </label>
-              <div className="flex items-center gap-1">
-                {[15, 30, 45, 60].map((mins) => (
-                  <button
-                    key={mins}
-                    type="button"
-                    onClick={() => applyDuration(mins)}
-                    className="text-xs font-mono px-1.5 py-0.5 rounded bg-surface-subtle border border-border text-muted hover:text-main"
-                  >
-                    {mins}m
-                  </button>
-                ))}
-              </div>
-            </div>
-
+            <label className="block text-xs font-mono text-muted uppercase font-bold mb-1">
+              Time
+            </label>
             <div className="grid grid-cols-2 gap-2">
-              <input
-                type="datetime-local"
-                required
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
-              />
-              <input
-                type="datetime-local"
-                required
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
-              />
+              <div>
+                <span className="text-xs text-muted block mb-0.5">Start</span>
+                <input
+                  type="time"
+                  required
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
+                />
+              </div>
+              <div>
+                <span className="text-xs text-muted block mb-0.5">End</span>
+                <input
+                  type="time"
+                  required
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
+                />
+              </div>
             </div>
           </div>
 
@@ -342,7 +323,7 @@ export function IntakeModal({
             </div>
           </div>
 
-          {/* Reflections - Bigger Textboxes for Context and Impact */}
+          {/* Reflections */}
           <div className="space-y-2">
             <label className="block text-xs font-mono text-muted uppercase font-bold">
               Reflections (Optional)
