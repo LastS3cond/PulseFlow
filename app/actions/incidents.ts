@@ -6,9 +6,6 @@ import { revalidatePath } from "next/cache";
 
 export type DashboardIncident = Omit<Incident, "encrypted_narrative">;
 
-/**
- * Inserts a single incident record into Supabase.
- */
 export async function insertIncident(payload: {
   logical_date: string;
   start_time: string;
@@ -33,13 +30,10 @@ export async function insertIncident(payload: {
   }
 
   revalidatePath("/");
+  revalidatePath("/analytics");
   return { success: true, incident: data };
 }
 
-/**
- * Bulk imports telemetry incidents idempotently.
- * Enforces ON CONFLICT (start_time, end_time, tier_level) DO NOTHING.
- */
 export async function bulkImportIncidents(
   records: Array<{
     logical_date: string;
@@ -52,9 +46,7 @@ export async function bulkImportIncidents(
     encrypted_narrative: string;
   }>
 ): Promise<{ success: boolean; insertedCount: number; error?: string }> {
-  if (!records || records.length === 0) {
-    return { success: true, insertedCount: 0 };
-  }
+  if (!records || records.length === 0) return { success: true, insertedCount: 0 };
 
   const supabase = getServiceSupabase();
 
@@ -72,12 +64,13 @@ export async function bulkImportIncidents(
   }
 
   revalidatePath("/");
+  revalidatePath("/analytics");
   return { success: true, insertedCount: data ? data.length : records.length };
 }
 
 /**
- * Retrieves incident metadata for dashboard display.
- * Strictly omits encrypted_narrative to uphold Zero-Knowledge Dashboard Privacy.
+ * Concurrently queries incident metadata and vault configuration in parallel.
+ * Omits encrypted_narrative to uphold Zero-Knowledge Dashboard Privacy.
  */
 export async function getDashboardData(): Promise<{
   incidents: DashboardIncident[];
@@ -86,39 +79,33 @@ export async function getDashboardData(): Promise<{
 }> {
   const supabase = getServiceSupabase();
 
-  // Query incidents metadata
-  const { data: incidentRows, error: incidentErr } = await supabase
-    .from("incidents")
-    .select(
-      "id, created_at, logical_date, start_time, end_time, tier_level, defense_occurred, surge_occurred, points"
-    )
-    .order("created_at", { ascending: false });
+  const [incidentRes, vaultRes] = await Promise.all([
+    supabase
+      .from("incidents")
+      .select(
+        "id, created_at, logical_date, start_time, end_time, tier_level, defense_occurred, surge_occurred, points"
+      )
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("vault_config")
+      .select("created_at")
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-  if (incidentErr) {
-    console.error("Error fetching dashboard incidents:", incidentErr);
+  if (incidentRes.error) {
+    console.error("Error fetching incidents:", incidentRes.error);
     throw new Error("Failed to fetch telemetry incidents");
   }
 
-  // Check vault configuration
-  const { data: vaultRow } = await supabase
-    .from("vault_config")
-    .select("created_at")
-    .limit(1)
-    .maybeSingle();
-
-  const vaultInitialized = !!vaultRow;
-  const inceptionDate = vaultRow?.created_at || new Date().toISOString();
-
+  const vaultRow = vaultRes.data;
   return {
-    incidents: (incidentRows || []) as DashboardIncident[],
-    vaultInitialized,
-    inceptionDate,
+    incidents: (incidentRes.data || []) as DashboardIncident[],
+    vaultInitialized: !!vaultRow,
+    inceptionDate: vaultRow?.created_at || new Date().toISOString(),
   };
 }
 
-/**
- * Fetches incidents including encrypted narratives for the Coaching Export workflow.
- */
 export async function getIncidentsForExport(filter?: {
   startDate?: string;
   endDate?: string;
@@ -132,12 +119,8 @@ export async function getIncidentsForExport(filter?: {
     )
     .order("start_time", { ascending: true });
 
-  if (filter?.startDate) {
-    query = query.gte("logical_date", filter.startDate);
-  }
-  if (filter?.endDate) {
-    query = query.lte("logical_date", filter.endDate);
-  }
+  if (filter?.startDate) query = query.gte("logical_date", filter.startDate);
+  if (filter?.endDate) query = query.lte("logical_date", filter.endDate);
 
   const { data, error } = await query;
   if (error) {
@@ -148,17 +131,13 @@ export async function getIncidentsForExport(filter?: {
   return (data || []) as Incident[];
 }
 
-/**
- * Deletes an incident record by ID.
- */
 export async function deleteIncident(id: string): Promise<{ success: boolean; error?: string }> {
   const supabase = getServiceSupabase();
 
   const { error } = await supabase.from("incidents").delete().eq("id", id);
-  if (error) {
-    return { success: false, error: error.message };
-  }
+  if (error) return { success: false, error: error.message };
 
   revalidatePath("/");
+  revalidatePath("/analytics");
   return { success: true };
 }
