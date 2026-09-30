@@ -160,7 +160,7 @@ export function HeatmapGrid({
       case 4:
         return `${base} bg-purple-600 border border-purple-700 hover:bg-purple-500 ${todayRing}`;
       case 5:
-        return `${base} bg-black border border-red-600 hover:bg-zinc-900 ${todayRing}`;
+        return `${base} bg-black border-2 border-white hover:bg-zinc-900 ${todayRing}`;
       default:
         return `${base} bg-zinc-100 border border-zinc-200 ${todayRing}`;
     }
@@ -295,7 +295,7 @@ export function HeatmapGrid({
             <span>L4</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-black border border-red-600 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-black border border-white inline-block" />
             <span>L5</span>
           </span>
         </div>

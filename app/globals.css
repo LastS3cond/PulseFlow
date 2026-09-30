@@ -66,6 +66,7 @@ body {
 }
 .badge-tier-5 {
   background: #000000;
-  color: #ef4444;
-  border: 1px solid #b91c1c;
+  color: #ffffff;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 0 0 1px #000000;
 }

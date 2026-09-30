@@ -141,8 +141,8 @@ export function PeriodStats({
     const endLabel = targetSaturday.toLocaleDateString([], { month: "short", day: "numeric" });
 
     let title = `${startLabel} – ${endLabel}`;
-    if (weekOffset === 0) title = `This Week (${startLabel} – ${endLabel})`;
-    else if (weekOffset === -1) title = `Last Week (${startLabel} – ${endLabel})`;
+    if (weekOffset === 0) title = "This Week";
+    else if (weekOffset === -1) title = "Last Week";
 
     return { count, points, title, days, tierCounts };
   }, [today, todayStr, weekOffset, incidentsByDate]);
@@ -192,9 +192,7 @@ export function PeriodStats({
     }
 
     const monthName = target.toLocaleDateString([], { month: "long", year: "numeric" });
-    let title = monthName;
-    if (monthOffset === 0) title = `This Month (${monthName})`;
-    else if (monthOffset === -1) title = `Last Month (${monthName})`;
+    const title = monthName;
 
     return { count, points, title, calendarCells, tierCounts };
   }, [today, todayStr, monthOffset, incidentsByDate]);
@@ -218,8 +216,8 @@ export function PeriodStats({
   };
 
   const formatDelta = (val: number, suffix = "") => {
-    if (Math.abs(val) < 0.1) return "avg";
-    return `${val < 0 ? "-" : "+"}${Math.abs(val).toFixed(1)}${suffix} vs avg`;
+    if (Math.abs(val) < 0.1) return "±0";
+    return `${val > 0 ? "+" : "-"}${Math.abs(val).toFixed(1)}${suffix}`;
   };
 
   return (
@@ -358,10 +356,10 @@ export function PeriodStats({
                           : cell.maxTier === 2
                           ? "bg-orange-400"
                           : cell.maxTier === 3
-                          ? "bg-red-400"
+                          ? "bg-red-500"
                           : cell.maxTier === 4
                           ? "bg-purple-400"
-                          : "bg-red-600"
+                          : "bg-black ring-1 ring-white"
                       }`}
                     />
                   )}

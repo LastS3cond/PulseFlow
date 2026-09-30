@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { DashboardIncident } from "@/app/actions/incidents";
 import {
   formatDisplayDate,
   formatDuration,
+  formatLocalDate,
   formatTimeOnly,
 } from "@/lib/telemetry/time";
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
-import { X, Clock, CheckCircle2, Shield } from "lucide-react";
+import { X, Clock, CheckCircle2, Shield, Moon } from "lucide-react";
 
 interface DayInspectionDrawerProps {
   dateStr: string | null;
@@ -23,13 +24,19 @@ export function DayInspectionDrawer({
 }: DayInspectionDrawerProps) {
   if (!dateStr) return null;
 
+  const sortedIncidents = useMemo(() => {
+    return [...incidents].sort(
+      (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+    );
+  }, [incidents]);
+
   const maxTier =
-    incidents.length > 0
-      ? (Math.max(...incidents.map((i) => i.tier_level)) as TierLevel)
+    sortedIncidents.length > 0
+      ? (Math.max(...sortedIncidents.map((i) => i.tier_level)) as TierLevel)
       : 0;
   const maxTierInfo = TIER_CONFIG[maxTier];
-  const totalPoints = incidents.reduce((sum, i) => sum + i.points, 0);
-  const totalDefenses = incidents.filter((i) => i.defense_occurred).length;
+  const totalPoints = sortedIncidents.reduce((sum, i) => sum + i.points, 0);
+  const totalDefenses = sortedIncidents.filter((i) => i.defense_occurred).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
@@ -85,7 +92,7 @@ export function DayInspectionDrawer({
             <div className="p-2.5 rounded-lg bg-surface-subtle border border-border">
               <div className="text-xs text-muted">Events</div>
               <div className="text-lg font-mono font-bold text-main mt-0.5">
-                {incidents.length}
+                {sortedIncidents.length}
               </div>
             </div>
             <div className="p-2.5 rounded-lg bg-surface-subtle border border-border">
@@ -96,16 +103,20 @@ export function DayInspectionDrawer({
             </div>
           </div>
 
-          {/* Incident List */}
-          {incidents.length === 0 ? (
+          {/* Incident List (Most Recent at Top) */}
+          {sortedIncidents.length === 0 ? (
             <div className="py-5 text-center text-xs text-muted">
               <CheckCircle2 className="w-5 h-5 text-accent mx-auto mb-1" />
               <span>No incidents logged.</span>
             </div>
           ) : (
             <div className="space-y-1.5 pt-1">
-              {incidents.map((inc) => {
+              {sortedIncidents.map((inc) => {
                 const info = TIER_CONFIG[inc.tier_level as TierLevel];
+                const startDate = new Date(inc.start_time);
+                const calendarDate = formatLocalDate(startDate);
+                const isAwakeCycleShifted = calendarDate !== inc.logical_date;
+
                 return (
                   <div
                     key={inc.id}
@@ -124,9 +135,17 @@ export function DayInspectionDrawer({
                             ({formatDuration(inc.start_time, inc.end_time)})
                           </span>
                         </div>
-                        <div className="text-xs text-muted flex items-center gap-1 font-mono">
-                          <Clock className="w-3 h-3" />
-                          {formatTimeOnly(inc.start_time)} – {formatTimeOnly(inc.end_time)}
+                        <div className="text-xs text-muted flex items-center gap-2 font-mono flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatTimeOnly(inc.start_time)} – {formatTimeOnly(inc.end_time)}
+                          </span>
+                          {isAwakeCycleShifted && (
+                            <span className="text-amber-400 bg-amber-500/10 px-1 py-0.5 rounded flex items-center gap-1 text-[11px]">
+                              <Moon className="w-3 h-3" />
+                              <span>Late night</span>
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -137,7 +156,7 @@ export function DayInspectionDrawer({
                       </div>
                       {inc.defense_occurred ? (
                         <div className="text-xs text-emerald-400 font-mono flex items-center gap-1 justify-end">
-                          <Shield className="w-2.5 h-2.5" />
+                          <Shield className="w-3 h-3" />
                           <span>Defended</span>
                         </div>
                       ) : null}

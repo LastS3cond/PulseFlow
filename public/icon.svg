@@ -1,59 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
   <defs>
-    <!-- Background Gradient -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#121622" />
-      <stop offset="100%" stop-color="#08090d" />
-    </linearGradient>
-
-    <!-- Emerald Trajectory Gradient -->
-    <linearGradient id="vectorGrad" x1="15%" y1="85%" x2="85%" y2="15%">
+    <linearGradient id="emeraldArrow" x1="0%" y1="100%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#059669" />
       <stop offset="50%" stop-color="#10b981" />
       <stop offset="100%" stop-color="#34d399" />
     </linearGradient>
-
-    <!-- Accent Glow Filter -->
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
   </defs>
 
-  <!-- Container Base -->
-  <rect width="100" height="100" rx="24" fill="url(#bgGrad)" />
-  <rect x="1.5" y="1.5" width="97" height="97" rx="22.5" stroke="#222938" stroke-width="2.5" />
-
-  <!-- Subdued Precision Grid Markers -->
-  <circle cx="50" cy="50" r="34" stroke="#1d2433" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6" />
-  <line x1="50" y1="12" x2="50" y2="20" stroke="#2a3449" stroke-width="1.5" stroke-linecap="round" />
-  <line x1="50" y1="80" x2="50" y2="88" stroke="#2a3449" stroke-width="1.5" stroke-linecap="round" />
-  <line x1="12" y1="50" x2="20" y2="50" stroke="#2a3449" stroke-width="1.5" stroke-linecap="round" />
-  <line x1="80" y1="50" x2="88" y2="50" stroke="#2a3449" stroke-width="1.5" stroke-linecap="round" />
-
-  <!-- Trajectory Glyph: Aerodynamic Ascending Delta / Monogram T -->
-  <!-- Left Wing -->
-  <path d="M 23 34 L 46 34 L 38 68 Z" fill="#047857" opacity="0.4" />
-  
-  <!-- Right Wing / Horizon Bar -->
-  <path d="M 54 34 L 77 34 L 62 68 Z" fill="#047857" opacity="0.25" />
-
-  <!-- Central Dynamic Vector: High-Ascent Trajectory Chevron -->
-  <path 
-    d="M 50 18 L 68 56 L 50 48 L 32 56 Z" 
-    fill="url(#vectorGrad)" 
-    filter="url(#glow)"
+  <!-- Clean Aerodynamic Ascending Trajectory Arrow -->
+  <path
+    d="M 50 14 L 84 76 L 50 62 L 16 76 Z"
+    fill="url(#emeraldArrow)"
   />
-
-  <!-- Trajectory Propulsion / Core Beam -->
-  <path 
-    d="M 50 48 L 50 82" 
-    stroke="url(#vectorGrad)" 
-    stroke-width="3" 
-    stroke-linecap="round" 
-    stroke-dasharray="2 3"
-  />
-
-  <!-- Apex Beacon -->
-  <circle cx="50" cy="18" r="2.5" fill="#ffffff" />
 </svg>

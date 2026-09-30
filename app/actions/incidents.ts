@@ -85,7 +85,7 @@ export async function getDashboardData(): Promise<{
       .select(
         "id, created_at, logical_date, start_time, end_time, tier_level, defense_occurred, surge_occurred, points"
       )
-      .order("created_at", { ascending: false }),
+      .order("start_time", { ascending: false }),
     supabase
       .from("vault_config")
       .select("created_at")
