@@ -23,11 +23,11 @@ Trajectory is a single-user, mobile-first Progressive Web Application (PWA) buil
 | Tier Badge | Operational State | System Definition | Base Pts | Trickle Reset Impact |
 | :--- | :--- | :--- | :--- | :--- |
 | **⬜ L0** | **Pure Focus** | Baseline deep work; uninterrupted workflow, zero unapproved drift. | 0 pts | None (Implicit daily baseline) |
-| **🟨 L1** | **Peripheral Drift** | Passive browsing, feed checks, brief video previews, curiosity clicks. | 1 pt | Resets L1 |
-| **🟧 L2** | **Soft Divergence** | Secondary entertainment media, long-form reading, extended loops. | 3 pts | Resets L2 & L1 |
-| **🟥 L3** | **Direct Compromise** | High-friction distraction sites, unapproved apps, workflow break. | 10 pts | Resets L3, L2, & L1 |
-| **🟪 L4** | **Deep Pipeline Drift** | Compulsive loops, non-standard browsing, total task abandonment. | 50 pts | Resets L4, L3, L2, & L1 |
-| **⬛ L5** | **System Reset** | Catastrophic protocol breakdown; multi-hour executive burnout. | 1000 pts | Resets all tier streaks to 0 |
+| **🟨 L1** | **Drift** | Passive browsing, feed checks, brief video previews, curiosity clicks. | 1 pt | Resets L1 |
+| **🟧 L2** | **Detour** | Secondary media, long-form reading, extended loops. | 3 pts | Resets L2 & L1 |
+| **🟥 L3** | **Direct** | Intentional visit, high-risk destination, immediate boundary break. | 10 pts | Resets L3, L2, & L1 |
+| **🟪 L4** | **Deep Spiral** | Compulsive loops, extended sessions, total task abandonment. | 50 pts | Resets L4, L3, L2, & L1 |
+| **⬛ L5** | **System Reset** | Catastrophic protocol breakdown, session boundary collapse. | 1000 pts | Resets all tier streaks to 0 |
 
 ### Scoring & Modifiers
 - **Surge Status**: `surge_occurred = !defense_occurred`. Surges carry no point weight. If no defense occurred, an impulsive surge is recorded by default.

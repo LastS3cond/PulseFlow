@@ -172,7 +172,7 @@ export function IntakeModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-3.5 sm:p-4 overflow-y-auto space-y-3">
+        <form onSubmit={handleSubmit} className="p-3.5 sm:p-4 overflow-y-auto overflow-x-hidden space-y-3">
           {errorMessage && (
             <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -252,12 +252,15 @@ export function IntakeModal({
             </div>
 
             {logicalDateChoice === "custom" && (
-              <input
-                type="date"
-                value={customLogicalDate}
-                onChange={(e) => setCustomLogicalDate(e.target.value)}
-                className="mt-2 w-full max-w-full box-border bg-surface-subtle border border-border rounded-lg px-2.5 py-1.5 text-xs text-main font-mono focus:outline-none focus:border-accent"
-              />
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-xs text-muted font-mono">Date:</span>
+                <input
+                  type="date"
+                  value={customLogicalDate}
+                  onChange={(e) => setCustomLogicalDate(e.target.value)}
+                  className="w-36 sm:w-40 bg-surface-subtle border border-border rounded-lg px-2.5 py-1 text-xs text-main font-mono focus:outline-none focus:border-accent [color-scheme:dark]"
+                />
+              </div>
             )}
           </div>
 
@@ -324,7 +327,7 @@ export function IntakeModal({
           </div>
 
           {/* Reflections */}
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-1.5">
             <label className="block text-xs font-mono text-muted uppercase font-bold">
               Reflections
             </label>
@@ -334,7 +337,7 @@ export function IntakeModal({
               placeholder="Pathway (e.g. video loop, tech feed)"
               value={pathway}
               onChange={(e) => setPathway(e.target.value)}
-              className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent"
+              className="block w-full bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent"
             />
 
             <textarea
@@ -342,7 +345,7 @@ export function IntakeModal({
               placeholder="Context (e.g. fatigue, afternoon lull, emotional state...)"
               value={context}
               onChange={(e) => setContext(e.target.value)}
-              className="w-full h-[68px] bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-none"
+              className="block w-full h-[68px] bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-none"
             />
 
             <textarea
@@ -350,7 +353,7 @@ export function IntakeModal({
               placeholder="Impact (e.g. 20m delay, missed workout, disrupted flow...)"
               value={impact}
               onChange={(e) => setImpact(e.target.value)}
-              className="w-full h-[68px] bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-none"
+              className="block w-full h-[68px] bg-surface-subtle border border-border rounded-lg px-3 py-1.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-none"
             />
           </div>
 

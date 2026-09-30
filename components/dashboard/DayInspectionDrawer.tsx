@@ -40,9 +40,9 @@ export function DayInspectionDrawer({
   const totalDefenses = sortedIncidents.filter((i) => i.defense_occurred).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4 pb-5 sm:pb-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="w-full sm:max-w-md bg-surface border border-border sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+        className="w-full sm:max-w-md bg-surface border border-border rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -59,7 +59,7 @@ export function DayInspectionDrawer({
         </div>
 
         {/* Body */}
-        <div className="p-3.5 sm:p-4 overflow-y-auto space-y-3">
+        <div className="p-3.5 sm:p-4 overflow-y-auto space-y-3 pb-5">
           {/* Status Banner */}
           <div
             className={`p-3 rounded-xl border flex items-center justify-between ${
