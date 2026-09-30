@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-  const sessionSecret = process.env.SESSION_SECRET || "fallback_secret_pulseflow_2026";
+  const sessionSecret = process.env.SESSION_SECRET || "fallback_secret_trajectory_2026";
   const isAuthenticated = sessionCookie
     ? await verifySessionToken(sessionCookie, sessionSecret)
     : false;

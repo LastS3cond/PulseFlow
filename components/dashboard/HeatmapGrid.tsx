@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { DashboardIncident } from "@/app/actions/incidents";
 import { formatDisplayDate, formatLocalDate } from "@/lib/telemetry/time";
-import { TIER_CONFIG, TierLevel } from "@/lib/types";
+import { TierLevel } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface HeatmapGridProps {
@@ -149,16 +149,16 @@ export function HeatmapGrid({
       return `${base} bg-zinc-400/30 border border-zinc-500/30 hover:bg-zinc-300/50 ${todayRing}`;
     }
 
-    // Color-coded severity with sophisticated muted dark-mode tones
+    // Color-coded severity with lightened, distinct dark-mode tones
     switch (day.maxTier) {
       case 1:
-        return `${base} bg-amber-500/40 border border-amber-500/35 hover:bg-amber-500/60 ${todayRing}`;
+        return `${base} bg-yellow-400/60 border border-yellow-400/50 hover:bg-yellow-400/80 ${todayRing}`;
       case 2:
-        return `${base} bg-orange-500/45 border border-orange-500/40 hover:bg-orange-500/65 ${todayRing}`;
+        return `${base} bg-orange-500/60 border border-orange-400/50 hover:bg-orange-500/80 ${todayRing}`;
       case 3:
-        return `${base} bg-rose-500/50 border border-rose-500/40 hover:bg-rose-500/70 ${todayRing}`;
+        return `${base} bg-rose-500/65 border border-rose-400/50 hover:bg-rose-500/85 ${todayRing}`;
       case 4:
-        return `${base} bg-purple-500/50 border border-purple-500/40 hover:bg-purple-500/70 ${todayRing}`;
+        return `${base} bg-purple-500/65 border border-purple-400/50 hover:bg-purple-500/85 ${todayRing}`;
       case 5:
         return `${base} bg-black border border-zinc-400/80 hover:bg-zinc-900 ${todayRing}`;
       default:
@@ -279,19 +279,19 @@ export function HeatmapGrid({
             <span>Baseline</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-amber-500/40 border border-amber-500/35 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-yellow-400/60 border border-yellow-400/50 inline-block" />
             <span>L1</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-orange-500/45 border border-orange-500/40 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-orange-500/60 border border-orange-400/50 inline-block" />
             <span>L2</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-rose-500/50 border border-rose-500/40 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-rose-500/65 border border-rose-400/50 inline-block" />
             <span>L3</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-purple-500/50 border border-purple-500/40 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-[2px] bg-purple-500/65 border border-purple-400/50 inline-block" />
             <span>L4</span>
           </span>
           <span className="flex items-center gap-1">

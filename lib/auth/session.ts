@@ -1,4 +1,4 @@
-const SESSION_COOKIE_NAME = "pulseflow_session";
+const SESSION_COOKIE_NAME = "trajectory_session";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**

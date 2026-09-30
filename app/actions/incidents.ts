@@ -130,14 +130,3 @@ export async function getIncidentsForExport(filter?: {
 
   return (data || []) as Incident[];
 }
-
-export async function deleteIncident(id: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = getServiceSupabase();
-
-  const { error } = await supabase.from("incidents").delete().eq("id", id);
-  if (error) return { success: false, error: error.message };
-
-  revalidatePath("/");
-  revalidatePath("/analytics");
-  return { success: true };
-}

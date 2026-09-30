@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid access password" }, { status: 401 });
     }
 
-    const sessionSecret = process.env.SESSION_SECRET || "fallback_secret_pulseflow_2026";
+    const sessionSecret = process.env.SESSION_SECRET || "fallback_secret_trajectory_2026";
     const token = await createSessionToken(sessionSecret);
 
     const response = NextResponse.json({ success: true });

@@ -396,14 +396,14 @@ export function PeriodStats({
                       : "cursor-pointer " + (cell.isToday ? "ring-1 ring-accent bg-accent/10" : "bg-surface-subtle hover:bg-border/50")
                   }`}
                 >
-                  <span className={`text-xs font-mono leading-none ${cell.isToday ? "text-accent font-bold" : "text-main"}`}>
+                  <span className={`text-xs font-mono leading-none -translate-y-[1px] ${cell.isToday ? "text-accent font-bold" : "text-main"}`}>
                     {cell.dayNum}
                   </span>
                   {cell.incidents.length > 0 && (
                     <span
                       className={`w-1.5 h-1.5 rounded-full absolute bottom-0.5 ${
                         cell.maxTier === 1
-                          ? "bg-amber-400"
+                          ? "bg-yellow-400"
                           : cell.maxTier === 2
                           ? "bg-orange-400"
                           : cell.maxTier === 3
