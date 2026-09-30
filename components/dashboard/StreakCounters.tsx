@@ -11,55 +11,42 @@ export function StreakCounters({ streaks }: StreakCountersProps) {
   const tiers: TierLevel[] = [0, 1, 2, 3, 4, 5];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-      {tiers.map((tier) => {
-        const info = TIER_CONFIG[tier];
-        const days = streaks[tier] ?? 0;
-        const isClean = days > 0;
+    <div className="w-full">
+      {/* Compact Streaks Strip: Short, mobile-first, zero clutter */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
+        {tiers.map((tier) => {
+          const info = TIER_CONFIG[tier];
+          const days = streaks[tier] ?? 0;
 
-        return (
-          <div
-            key={tier}
-            className={`relative rounded-xl border p-4 transition-all duration-200 flex flex-col justify-between ${
-              tier === 0
-                ? "bg-surface border-accent/30 hover:border-accent/60"
-                : "bg-surface border-border hover:border-border-light"
-            }`}
-          >
-            {/* Header with badge */}
-            <div className="flex items-center justify-between gap-1 mb-2">
-              <span
-                className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded ${info.colorClass}`}
-              >
-                {info.badge}
-              </span>
-              <span className="text-[10px] uppercase tracking-wider text-muted font-mono">
-                Streak
-              </span>
-            </div>
-
-            {/* Streak Number */}
-            <div className="my-2">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-3xl font-extrabold tracking-tight text-main font-mono">
-                  {days}
+          return (
+            <div
+              key={tier}
+              title={`${info.badge} ${info.title}: ${days} consecutive days. (${info.resetImpact})`}
+              className={`rounded-lg border px-2.5 py-1.5 flex items-center justify-between transition-colors ${
+                tier === 0
+                  ? "bg-surface border-accent/30"
+                  : "bg-surface border-border hover:border-border-light"
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`text-[10px] font-mono font-bold px-1 py-0.2 rounded ${info.colorClass}`}
+                >
+                  L{tier}
                 </span>
-                <span className="text-xs text-muted font-medium">
-                  {days === 1 ? "day" : "days"}
+                <span className="text-[11px] text-muted truncate max-w-[45px] sm:max-w-none hidden xs:inline">
+                  {tier === 0 ? "Focus" : info.title.split(" ")[0]}
                 </span>
               </div>
-              <p className="text-xs font-semibold text-main truncate mt-1">{info.title}</p>
-            </div>
 
-            {/* Reset Rule */}
-            <div className="pt-2 border-t border-border/60 mt-1">
-              <p className="text-[10.5px] text-muted leading-tight truncate">
-                {info.resetImpact}
-              </p>
+              <div className="flex items-baseline gap-0.5 font-mono">
+                <span className="text-sm font-extrabold text-main">{days}</span>
+                <span className="text-[10px] text-muted">d</span>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

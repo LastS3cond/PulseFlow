@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Loader2,
   Copy,
-  Info,
 } from "lucide-react";
 
 interface ImportModalProps {
@@ -84,7 +83,7 @@ export function ImportModal({
     if (!publicKeySpki) {
       setStatusMessage({
         type: "error",
-        text: "Vault encryption key is not initialized. Please configure your vault first.",
+        text: "Vault key is not initialized.",
       });
       return;
     }
@@ -99,10 +98,7 @@ export function ImportModal({
 
     setIsProcessing(true);
     try {
-      // 1. Import Public Key
       const publicKey = await importPublicKeyFromSpki(publicKeySpki);
-
-      // 2. Parse and batch encrypt client-side
       const preparedPayloads = await parseAndEncryptImport(
         rawText,
         publicKey,
@@ -113,18 +109,15 @@ export function ImportModal({
         throw new Error("No valid records found in import payload.");
       }
 
-      // 3. Dispatch to Server Action
       const result = await bulkImportIncidents(preparedPayloads);
 
       if (!result.success) {
-        throw new Error(result.error || "Server bulk import failed.");
+        throw new Error(result.error || "Import failed.");
       }
 
       setStatusMessage({
         type: "success",
-        text: `Successfully ingested ${result.insertedCount} telemetry incident${
-          result.insertedCount === 1 ? "" : "s"
-        }. Full-history streaks and heatmaps updated.`,
+        text: `Imported ${result.insertedCount} records successfully.`,
       });
 
       onSuccess();
@@ -132,7 +125,7 @@ export function ImportModal({
       console.error(err);
       setStatusMessage({
         type: "error",
-        text: err?.message || "Failed to parse and import records.",
+        text: err?.message || "Failed to import records.",
       });
     } finally {
       setIsProcessing(false);
@@ -140,40 +133,30 @@ export function ImportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="w-full max-w-xl bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="w-full max-w-lg bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-surface-subtle border border-border text-accent">
-              <UploadCloud className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-main">
-                Batch Historical Ingestion Engine
-              </h2>
-              <p className="text-xs text-muted">
-                Import Apple Notes CSV/JSON with client-side RSA envelope encryption
-              </p>
-            </div>
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UploadCloud className="w-4 h-4 text-accent" />
+            <h2 className="text-sm font-bold text-main">Batch Import</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-muted hover:text-main hover:bg-surface-subtle transition-colors"
+            className="p-1 rounded-lg text-muted hover:text-main hover:bg-surface-subtle transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
-          {/* Status Alert */}
+        <div className="p-4 overflow-y-auto space-y-3.5">
           {statusMessage && (
             <div
-              className={`p-3 rounded-xl border text-xs flex items-center gap-2.5 ${
+              className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${
                 statusMessage.type === "success"
                   ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                   : "bg-red-500/10 border-red-500/30 text-red-400"
@@ -188,31 +171,30 @@ export function ImportModal({
             </div>
           )}
 
-          {/* Format selection and File upload */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-muted font-bold">Format:</span>
+          {/* Format selection */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setFormat("csv")}
-                className={`px-3 py-1 rounded-lg text-xs font-mono font-semibold transition-colors ${
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
                   format === "csv"
-                    ? "bg-accent/20 border border-accent text-accent"
-                    : "bg-surface-subtle border border-border text-muted"
+                    ? "bg-accent text-zinc-950 font-bold"
+                    : "bg-surface-subtle text-muted hover:text-main"
                 }`}
               >
-                CSV (Apple Notes)
+                CSV
               </button>
               <button
                 type="button"
                 onClick={() => setFormat("json")}
-                className={`px-3 py-1 rounded-lg text-xs font-mono font-semibold transition-colors ${
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
                   format === "json"
-                    ? "bg-accent/20 border border-accent text-accent"
-                    : "bg-surface-subtle border border-border text-muted"
+                    ? "bg-accent text-zinc-950 font-bold"
+                    : "bg-surface-subtle text-muted hover:text-main"
                 }`}
               >
-                JSON Array
+                JSON
               </button>
             </div>
 
@@ -223,11 +205,11 @@ export function ImportModal({
                 className="text-[11px] font-mono text-muted hover:text-main flex items-center gap-1 bg-surface-subtle border border-border px-2 py-1 rounded"
               >
                 <Copy className="w-3 h-3" />
-                <span>Insert Sample</span>
+                <span>Sample</span>
               </button>
               <label className="text-[11px] font-mono text-accent hover:text-accent-hover cursor-pointer flex items-center gap-1 bg-accent/10 border border-accent/30 px-2 py-1 rounded">
                 <FileText className="w-3 h-3" />
-                <span>Upload File</span>
+                <span>Upload</span>
                 <input
                   type="file"
                   accept=".csv,.json,.txt"
@@ -238,69 +220,42 @@ export function ImportModal({
             </div>
           </div>
 
-          {/* Raw Text Input */}
-          <div>
-            <textarea
-              rows={9}
-              value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
-              placeholder={
-                format === "csv"
-                  ? "Paste CSV with headers (logical_date,start_time,end_time,tier,defended,pathway,context,impact)..."
-                  : 'Paste JSON array: [{"start_time": "...", "end_time": "...", "tier_level": 2, ...}]'
-              }
-              className="w-full bg-surface-subtle border border-border rounded-xl p-3 text-xs font-mono text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-y"
-            />
-          </div>
-
-          {/* Architecture notes */}
-          <div className="p-3 rounded-xl bg-surface-subtle/80 border border-border text-[11px] text-muted space-y-1.5">
-            <div className="flex items-center gap-1.5 font-semibold text-main">
-              <Info className="w-3.5 h-3.5 text-accent" />
-              <span>Idempotent Telemetry Ingestion</span>
-            </div>
-            <ul className="list-disc pl-4 space-y-0.5">
-              <li>
-                <strong>Idempotent Ingestion:</strong> Existing windows matching{" "}
-                <code>(start_time, end_time, tier_level)</code> are safely skipped.
-              </li>
-              <li>
-                <strong>Late-Night Awake Cycle:</strong> If <code>logical_date</code> is left blank,
-                the engine derives it using the 12:00 AM – 5:59 AM rule.
-              </li>
-              <li>
-                <strong>Asymmetric Privacy:</strong> Every single imported record generates an
-                ephemeral AES-GCM DEK wrapped with the RSA-OAEP public key.
-              </li>
-            </ul>
-          </div>
+          {/* Textarea */}
+          <textarea
+            rows={8}
+            value={rawText}
+            onChange={(e) => setRawText(e.target.value)}
+            placeholder={
+              format === "csv"
+                ? "Paste CSV: logical_date,start_time,end_time,tier,defended,pathway,context,impact..."
+                : 'Paste JSON array: [{"start_time": "...", "end_time": "...", "tier_level": 2, ...}]'
+            }
+            className="w-full bg-surface-subtle border border-border rounded-xl p-3 text-xs font-mono text-main placeholder-muted/50 focus:outline-none focus:border-accent resize-y"
+          />
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 border-t border-border bg-surface-subtle/50 flex items-center justify-between">
+        {/* Footer */}
+        <div className="p-3.5 border-t border-border flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-surface border border-border text-xs font-semibold text-muted hover:text-main transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-xs text-muted hover:text-main"
           >
-            Close
+            Cancel
           </button>
           <button
             type="button"
             onClick={handleImport}
             disabled={isProcessing || !rawText.trim()}
-            className="px-5 py-2 rounded-lg bg-accent text-zinc-950 font-bold text-xs flex items-center gap-2 hover:bg-accent-hover transition-colors disabled:opacity-50"
+            className="px-4 py-1.5 rounded-lg bg-accent text-zinc-950 font-bold text-xs flex items-center gap-1.5 hover:bg-accent-hover transition-colors disabled:opacity-50"
           >
             {isProcessing ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Encrypting &amp; Upserting...</span>
+                <span>Importing...</span>
               </>
             ) : (
-              <>
-                <UploadCloud className="w-3.5 h-3.5" />
-                <span>Execute Batch Ingest</span>
-              </>
+              <span>Import</span>
             )}
           </button>
         </div>

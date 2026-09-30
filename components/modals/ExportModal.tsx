@@ -13,7 +13,6 @@ import {
   AlertTriangle,
   Loader2,
   FileCode,
-  ShieldCheck,
 } from "lucide-react";
 
 interface ExportModalProps {
@@ -51,25 +50,23 @@ export function ExportModal({
     setGeneratedPayload(null);
 
     if (!password2) {
-      setErrorMessage("Please enter Password 2 (Vault Password).");
+      setErrorMessage("Please enter vault password.");
       return;
     }
 
     if (!salt || !encryptedPrivateKey) {
-      setErrorMessage("Vault keys are missing or not initialized.");
+      setErrorMessage("Vault keys not initialized.");
       return;
     }
 
     setIsDecrypting(true);
     try {
-      // 1. Unwrap RSA Private Key in ephemeral memory using Password 2
       const privateKey = await unwrapPrivateKeyWithPassword2(
         password2,
         salt,
         encryptedPrivateKey
       );
 
-      // 2. Compute date filter if requested
       let startDate: string | undefined;
       const now = new Date();
       if (timeframe === "7d") {
@@ -83,10 +80,8 @@ export function ExportModal({
         startDate = d.toISOString().split("T")[0];
       }
 
-      // 3. Fetch incidents from server
       const incidents = await getIncidentsForExport({ startDate });
 
-      // 4. Decrypt narrative payloads in RAM and obfuscate into Base64
       const exportItems = await Promise.all(
         incidents.map(async (inc) => {
           let narrativeB64 = "";
@@ -95,7 +90,6 @@ export function ExportModal({
               inc.encrypted_narrative,
               privateKey
             );
-            // Obfuscate to Base64 for coaching prompt
             narrativeB64 = btoa(decryptedJson);
           } catch (decErr) {
             console.warn("Failed to decrypt narrative for record", inc.id, decErr);
@@ -119,16 +113,13 @@ export function ExportModal({
         })
       );
 
-      // 5. Build coaching export payload
       const jsonOutput = JSON.stringify(exportItems, null, 2);
       const fullText = `${COACHING_PROMPT}\n${jsonOutput}\n--- TELEMETRY LOG END ---`;
 
       setGeneratedPayload(fullText);
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(
-        err?.message || "Invalid Password 2 or failed to decrypt telemetry records"
-      );
+      setErrorMessage(err?.message || "Invalid password or decryption failed");
     } finally {
       setIsDecrypting(false);
     }
@@ -147,7 +138,7 @@ export function ExportModal({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `pulseflow-telemetry-coaching-${new Date().toISOString().split("T")[0]}.txt`;
+    a.download = `pulseflow-export-${new Date().toISOString().split("T")[0]}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -160,74 +151,56 @@ export function ExportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="w-full max-w-2xl bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="w-full max-w-xl bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-surface-subtle border border-border text-accent">
-              <KeyRound className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-main">Coaching Export Gateway</h2>
-              <p className="text-xs text-muted">
-                Requires Password 2 to unwrap RSA private key &amp; generate obfuscated prompt
-              </p>
-            </div>
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <KeyRound className="w-4 h-4 text-accent" />
+            <h2 className="text-sm font-bold text-main">Coaching Export</h2>
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg text-muted hover:text-main hover:bg-surface-subtle transition-colors"
+            className="p-1 rounded-lg text-muted hover:text-main hover:bg-surface-subtle transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
+        <div className="p-4 overflow-y-auto space-y-3.5">
           {errorMessage && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+            <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {!generatedPayload ? (
-            <form onSubmit={handleGenerateExport} className="space-y-4">
-              {/* Privacy Notice */}
-              <div className="p-3.5 rounded-xl bg-surface-subtle border border-border text-xs text-muted space-y-1.5">
-                <div className="flex items-center gap-2 font-semibold text-main">
-                  <ShieldCheck className="w-4 h-4 text-accent" />
-                  <span>Dual-Password Ephemeral Decryption</span>
-                </div>
-                <p>
-                  Password 2 derives the master AES key via PBKDF2 (100k iterations) exclusively in browser RAM. Your RSA private key is unwrapped temporarily and immediately erased once generation is complete.
-                </p>
-              </div>
-
-              {/* Timeframe selection */}
+            <form onSubmit={handleGenerateExport} className="space-y-3.5">
+              {/* Timeframe */}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-wider text-muted font-bold mb-1.5">
-                  Export Timeframe Window
+                <label className="block text-[11px] font-mono text-muted uppercase font-bold mb-1.5">
+                  Timeframe
                 </label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-1.5">
                   {[
-                    { id: "all", label: "All Time" },
-                    { id: "90d", label: "Last 90 Days" },
-                    { id: "30d", label: "Last 30 Days" },
-                    { id: "7d", label: "Last 7 Days" },
+                    { id: "all", label: "All" },
+                    { id: "90d", label: "90d" },
+                    { id: "30d", label: "30d" },
+                    { id: "7d", label: "7d" },
                   ].map((t) => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={() => setTimeframe(t.id as any)}
-                      className={`py-2 px-1 rounded-lg border text-xs font-mono font-semibold transition-colors ${
+                      className={`py-1.5 rounded-lg border text-xs font-semibold transition-colors ${
                         timeframe === t.id
-                          ? "bg-accent/20 border-accent text-accent"
-                          : "bg-surface-subtle border-border text-muted hover:border-border-light"
+                          ? "bg-accent text-zinc-950 font-bold border-accent"
+                          : "bg-surface-subtle border-border text-muted hover:text-main"
                       }`}
                     >
                       {t.label}
@@ -236,18 +209,18 @@ export function ExportModal({
                 </div>
               </div>
 
-              {/* Password 2 Input */}
+              {/* Password */}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-wider text-muted font-bold mb-1.5">
-                  Enter Password 2 (Vault Password)
+                <label className="block text-[11px] font-mono text-muted uppercase font-bold mb-1">
+                  Vault Password
                 </label>
                 <input
                   type="password"
                   required
-                  placeholder="Enter vault master password..."
+                  placeholder="Enter vault password..."
                   value={password2}
                   onChange={(e) => setPassword2(e.target.value)}
-                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent"
+                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2 text-xs text-main placeholder-muted/50 focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -255,94 +228,69 @@ export function ExportModal({
                 <button
                   type="submit"
                   disabled={isDecrypting || !password2}
-                  className="px-5 py-2.5 rounded-xl bg-accent text-zinc-950 font-bold text-xs flex items-center gap-2 hover:bg-accent-hover transition-colors disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-accent text-zinc-950 font-bold text-xs flex items-center gap-2 hover:bg-accent-hover transition-colors disabled:opacity-50"
                 >
                   {isDecrypting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Deriving Key &amp; Decrypting...</span>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Generating...</span>
                     </>
                   ) : (
-                    <>
-                      <KeyRound className="w-4 h-4" />
-                      <span>Decrypt &amp; Build Coaching Payload</span>
-                    </>
+                    <span>Generate Export</span>
                   )}
                 </button>
               </div>
             </form>
           ) : (
-            <div className="space-y-4">
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 shrink-0" />
-                  <span>
-                    Decrypted &amp; Base64-obfuscated coaching payload generated successfully.
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setGeneratedPayload(null)}
-                  className="text-[11px] underline font-mono text-emerald-300 hover:text-emerald-100"
-                >
-                  Reset / Re-run
-                </button>
-              </div>
-
-              {/* Code viewer */}
+            <div className="space-y-3.5">
               <div className="relative">
                 <div className="flex items-center justify-between px-3 py-1.5 bg-surface-subtle border border-b-0 border-border rounded-t-xl text-xs font-mono text-muted">
                   <span className="flex items-center gap-1.5">
                     <FileCode className="w-3.5 h-3.5 text-accent" />
-                    <span>LLM Coaching Prompt Payload</span>
+                    <span>LLM Export Payload</span>
                   </span>
-                  <span className="text-[11px] text-muted">Base64 Obfuscated</span>
+                  <button
+                    type="button"
+                    onClick={() => setGeneratedPayload(null)}
+                    className="text-[11px] text-accent hover:underline"
+                  >
+                    Reset
+                  </button>
                 </div>
                 <textarea
                   readOnly
-                  rows={13}
+                  rows={11}
                   value={generatedPayload}
                   className="w-full bg-[#06070a] border border-border rounded-b-xl p-3 text-xs font-mono text-slate-300 focus:outline-none resize-none"
                 />
               </div>
 
-              {/* Action buttons */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={handleClose}
-                  className="px-4 py-2 rounded-lg bg-surface-subtle border border-border text-xs font-semibold text-muted hover:text-main"
+                  onClick={handleDownload}
+                  className="px-3 py-1.5 rounded-lg bg-surface-subtle border border-border text-xs text-main hover:bg-border/60 flex items-center gap-1.5"
                 >
-                  Close Gateway
+                  <Download className="w-3.5 h-3.5" />
+                  <span>.txt</span>
                 </button>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleDownload}
-                    className="px-4 py-2 rounded-lg bg-surface-subtle border border-border text-xs font-semibold text-main hover:bg-border/60 flex items-center gap-1.5 transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download .txt</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCopy}
-                    className="px-5 py-2 rounded-lg bg-accent text-zinc-950 font-bold text-xs flex items-center gap-1.5 hover:bg-accent-hover transition-colors"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-zinc-950" />
-                        <span>Copied to Clipboard!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy Prompt &amp; Payload</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="px-4 py-1.5 rounded-lg bg-accent text-zinc-950 font-bold text-xs flex items-center gap-1.5 hover:bg-accent-hover transition-colors"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-zinc-950" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           )}
