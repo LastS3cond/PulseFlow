@@ -12,18 +12,10 @@ interface PeriodStatsProps {
   onSelectDate?: (dateStr: string, incidentsForDate: DashboardIncident[]) => void;
 }
 
+import { computeMacroStats } from "@/lib/telemetry/scoring";
+
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const TIERS: (1 | 2 | 3 | 4 | 5)[] = [1, 2, 3, 4, 5];
-
-function computeMedian(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 !== 0) {
-    return sorted[mid];
-  }
-  return (sorted[mid - 1] + sorted[mid]) / 2;
-}
 
 export function PeriodStats({
   incidents,
@@ -50,93 +42,11 @@ export function PeriodStats({
     return map;
   }, [incidents]);
 
-  // Historical spans, per-tier averages, and Option B Median Points baseline
-  const {
-    avgWeeklyIncidents,
-    medianWeeklyPoints,
-    avgMonthlyIncidents,
-    medianMonthlyPoints,
-    tierWeeklyAverages,
-    tierMonthlyAverages,
-  } = useMemo(() => {
-    let start = inceptionDate ? new Date(inceptionDate) : today;
-    const tierCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-
-    for (let i = 0; i < incidents.length; i++) {
-      const inc = incidents[i];
-      if (tierCounts[inc.tier_level] !== undefined) tierCounts[inc.tier_level]++;
-      if (new Date(inc.logical_date) < start) start = new Date(inc.logical_date);
-    }
-
-    const diffMs = Math.max(0, today.getTime() - start.getTime());
-    const totalWeeks = Math.max(1, Math.ceil(diffMs / 604800000));
-    const totalMonths = Math.max(
-      1,
-      (today.getFullYear() - start.getFullYear()) * 12 +
-        (today.getMonth() - start.getMonth()) +
-        1
-    );
-
-    // Build timeline maps to compute median points per week and month (Option B)
-    const currentSunday = new Date(today);
-    currentSunday.setDate(today.getDate() - today.getDay());
-    currentSunday.setHours(0, 0, 0, 0);
-
-    const startSunday = new Date(start);
-    startSunday.setDate(start.getDate() - start.getDay());
-    startSunday.setHours(0, 0, 0, 0);
-
-    const weekPointsMap = new Map<string, number>();
-    const iterW = new Date(startSunday);
-    while (iterW <= currentSunday) {
-      weekPointsMap.set(formatLocalDate(iterW), 0);
-      iterW.setDate(iterW.getDate() + 7);
-    }
-
-    const monthPointsMap = new Map<string, number>();
-    const iterM = new Date(start.getFullYear(), start.getMonth(), 1);
-    const endM = new Date(today.getFullYear(), today.getMonth(), 1);
-    while (iterM <= endM) {
-      const mKey = `${iterM.getFullYear()}-${String(iterM.getMonth() + 1).padStart(2, "0")}`;
-      monthPointsMap.set(mKey, 0);
-      iterM.setMonth(iterM.getMonth() + 1);
-    }
-
-    for (let i = 0; i < incidents.length; i++) {
-      const inc = incidents[i];
-      const [y, m, d] = inc.logical_date.split("-").map(Number);
-      const incDate = new Date(y, m - 1, d);
-      incDate.setDate(incDate.getDate() - incDate.getDay());
-      const wKey = formatLocalDate(incDate);
-      if (weekPointsMap.has(wKey)) {
-        weekPointsMap.set(wKey, (weekPointsMap.get(wKey) || 0) + inc.points);
-      }
-      const mKey = inc.logical_date.slice(0, 7);
-      if (monthPointsMap.has(mKey)) {
-        monthPointsMap.set(mKey, (monthPointsMap.get(mKey) || 0) + inc.points);
-      }
-    }
-
-    const medianWeeklyPoints = computeMedian(Array.from(weekPointsMap.values()));
-    const medianMonthlyPoints = computeMedian(Array.from(monthPointsMap.values()));
-
-    const tWeekly: Record<number, string> = {};
-    const tMonthly: Record<number, string> = {};
-    for (const t of TIERS) {
-      tWeekly[t] = (tierCounts[t] / totalWeeks).toFixed(1);
-      tMonthly[t] = (tierCounts[t] / totalMonths).toFixed(1);
-    }
-
-    const totalCount = incidents.length;
-    return {
-      avgWeeklyIncidents: totalCount / totalWeeks,
-      medianWeeklyPoints,
-      avgMonthlyIncidents: totalCount / totalMonths,
-      medianMonthlyPoints,
-      tierWeeklyAverages: tWeekly,
-      tierMonthlyAverages: tMonthly,
-    };
-  }, [incidents, inceptionDate, today]);
+  // Macro baseline statistics (Option B: Median Points Baseline)
+  const macroStats = useMemo(
+    () => computeMacroStats(incidents, inceptionDate),
+    [incidents, inceptionDate]
+  );
 
   // Selected Week computation
   const weekData = useMemo(() => {
@@ -253,10 +163,10 @@ export function PeriodStats({
   const currentPoints = isWeek ? weekData.points : monthData.points;
   const currentTitle = isWeek ? weekData.title : monthData.title;
   const currentTierCounts = isWeek ? weekData.tierCounts : monthData.tierCounts;
-  const currentTierAverages = isWeek ? tierWeeklyAverages : tierMonthlyAverages;
+  const currentTierAverages = isWeek ? macroStats.tierWeeklyAverages : macroStats.tierMonthlyAverages;
 
-  const deltaCount = currentCount - (isWeek ? avgWeeklyIncidents : avgMonthlyIncidents);
-  const deltaPoints = currentPoints - (isWeek ? medianWeeklyPoints : medianMonthlyPoints);
+  const deltaCount = currentCount - (isWeek ? macroStats.avgWeeklyIncidentsNum : macroStats.avgMonthlyIncidentsNum);
+  const deltaPoints = currentPoints - (isWeek ? macroStats.medianWeeklyPoints : macroStats.medianMonthlyPoints);
 
   const canGoForward = (isWeek ? weekOffset : monthOffset) < 0;
 

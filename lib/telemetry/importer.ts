@@ -1,6 +1,6 @@
 import { encryptNarrativeWithPublicKey } from "../crypto/asymmetric";
 import { calculateIncidentPoints, deriveSurgeOccurred } from "./scoring";
-import { formatLocalDate } from "./time";
+import { getLogicalDateForTimestamp } from "./time";
 
 export interface PreparedImportRecord {
   logical_date: string;
@@ -110,20 +110,10 @@ export async function parseAndEncryptImport(
       const points = calculateIncidentPoints(tier, defense_occurred);
 
       // Auto-derive logical_date if missing using late-night awake-cycle rule
-      let logicalDate = row.logical_date || row.logicalDate;
-      if (!logicalDate || String(logicalDate).trim() === "") {
-        const hours = startTime.getHours();
-        if (hours >= 0 && hours < 6) {
-          const prev = new Date(startTime);
-          prev.setDate(prev.getDate() - 1);
-          logicalDate = formatLocalDate(prev);
-        } else {
-          logicalDate = formatLocalDate(startTime);
-        }
-      } else {
-        // Ensure format is YYYY-MM-DD
-        logicalDate = String(logicalDate).trim().substring(0, 10);
-      }
+      const rawLogical = row.logical_date || row.logicalDate;
+      const logicalDate = rawLogical && String(rawLogical).trim() !== ""
+        ? String(rawLogical).trim().substring(0, 10)
+        : getLogicalDateForTimestamp(startTime);
 
       // Narrative JSON payload
       const narrativeJson = JSON.stringify({
