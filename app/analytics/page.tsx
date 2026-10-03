@@ -234,8 +234,13 @@ export default function AnalyticsPage() {
         {/* Day Inspection Drawer */}
         <DayInspectionDrawer
           dateStr={inspectingDay?.dateStr || null}
-          incidents={inspectingDay?.incidents || []}
+          incidents={
+            inspectingDay
+              ? incidents.filter((i) => i.logical_date === inspectingDay.dateStr)
+              : []
+          }
           onClose={() => setInspectingDay(null)}
+          onRefresh={loadData}
         />
       </div>
     </div>

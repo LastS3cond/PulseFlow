@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { DashboardIncident, getDashboardData } from "@/app/actions/incidents";
 import { getVaultConfig, VaultStatus } from "@/app/actions/vault";
 import { calculateStreaks } from "@/lib/telemetry/scoring";
-import { getTodayDateString } from "@/lib/telemetry/time";
+import { getBiologicalTodayDateString } from "@/lib/telemetry/time";
 import { Header } from "@/components/dashboard/Header";
 import { PeriodStats } from "@/components/dashboard/PeriodStats";
 import { StreakCounters } from "@/components/dashboard/StreakCounters";
@@ -57,7 +57,7 @@ export default function DashboardPage() {
     loadData();
   }, [loadData]);
 
-  const todayStr = getTodayDateString();
+  const todayStr = getBiologicalTodayDateString();
   const streaks = calculateStreaks(incidents, todayStr, inceptionDate);
 
   return (
@@ -157,8 +157,13 @@ export default function DashboardPage() {
 
         <DayInspectionDrawer
           dateStr={inspectingDay?.dateStr || null}
-          incidents={inspectingDay?.incidents || []}
+          incidents={
+            inspectingDay
+              ? incidents.filter((i) => i.logical_date === inspectingDay.dateStr)
+              : []
+          }
           onClose={() => setInspectingDay(null)}
+          onRefresh={loadData}
         />
       </div>
     </div>

@@ -14,6 +14,7 @@ import {
   getTodayDateString,
   getYesterdayDateString,
   isLateNightWindow,
+  resolveIncidentTimestamps,
 } from "@/lib/telemetry/time";
 import { TIER_CONFIG, TierLevel } from "@/lib/types";
 import {
@@ -99,18 +100,12 @@ export function IntakeModal({
       return;
     }
 
-    // Combine resolved date with time
-    const [sh, sm] = startTime.split(":").map(Number);
-    const [eh, em] = endTime.split(":").map(Number);
-    const [yr, mo, da] = resolvedLogicalDate.split("-").map(Number);
-
-    const startObj = new Date(yr, mo - 1, da, sh, sm);
-    let endObj = new Date(yr, mo - 1, da, eh, em);
-
-    // If end time is earlier than start time, it crossed midnight into next day
-    if (endObj.getTime() < startObj.getTime()) {
-      endObj = new Date(endObj.getTime() + 86400000);
-    }
+    // Combine resolved date with time and handle post-midnight window
+    const { startObj, endObj } = resolveIncidentTimestamps(
+      resolvedLogicalDate,
+      startTime,
+      endTime
+    );
 
     setIsSubmitting(true);
     try {

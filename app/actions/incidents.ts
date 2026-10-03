@@ -130,3 +130,49 @@ export async function getIncidentsForExport(filter?: {
 
   return (data || []) as Incident[];
 }
+
+export async function deleteIncident(
+  id: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = getServiceSupabase();
+
+  const { error } = await supabase.from("incidents").delete().eq("id", id);
+
+  if (error) {
+    console.error("Error deleting incident:", error);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/analytics");
+  return { success: true };
+}
+
+export async function updateIncident(
+  id: string,
+  payload: {
+    logical_date: string;
+    start_time: string;
+    end_time: string;
+    tier_level: number;
+    defense_occurred: boolean;
+    surge_occurred: boolean;
+    points: number;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = getServiceSupabase();
+
+  const { error } = await supabase
+    .from("incidents")
+    .update(payload)
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error updating incident:", error);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/analytics");
+  return { success: true };
+}

@@ -26,12 +26,12 @@ export function getYesterdayDateString(): string {
 
 /**
  * Awake-Cycle Logical Date Derivation:
- * If a timestamp falls in the late-night window (12:00 AM - 5:59:59 AM, local hours 0-5),
+ * If a timestamp falls in the late-night window (12:00 AM - 6:59:59 AM, local hours 0-6),
  * it is attributed to the biological waking cycle of the preceding calendar day (Yesterday).
  */
 export function getLogicalDateForTimestamp(target: Date = new Date()): string {
   const hours = target.getHours();
-  if (hours >= 0 && hours < 6) {
+  if (hours >= 0 && hours < 7) {
     const prev = new Date(target);
     prev.setDate(prev.getDate() - 1);
     return formatLocalDate(prev);
@@ -40,21 +40,64 @@ export function getLogicalDateForTimestamp(target: Date = new Date()): string {
 }
 
 /**
+ * Returns the biological "today" date string (rolls over at 7:00 AM local time).
+ */
+export function getBiologicalTodayDateString(target: Date = new Date()): string {
+  return getLogicalDateForTimestamp(target);
+}
+
+/**
  * Classifies whether a timestamp is "late night": 10:00 PM (22:00) and later,
- * including overnight hours before 6:00 AM (hours >= 22 or hours < 6).
+ * including overnight hours before 7:00 AM (hours >= 22 or hours < 7).
  */
 export function isLateNight(time: string | Date = new Date()): boolean {
   const d = new Date(time);
   const hours = d.getHours();
-  return hours >= 22 || hours < 6;
+  return hours >= 22 || hours < 7;
 }
 
 /**
- * Checks if current local time is in the late-night window (12 AM - 5:59 AM).
+ * Checks if current local time is in the late-night window (12 AM - 6:59 AM).
  */
 export function isLateNightWindow(date: Date = new Date()): boolean {
   const hours = date.getHours();
-  return hours >= 0 && hours < 6;
+  return hours >= 0 && hours < 7;
+}
+
+/**
+ * Resolves start and end timestamps for an incident, ensuring that clock times
+ * occurring post-midnight (hours < 7) under a logical date are placed on the next
+ * calendar day (logical date + 1), preserving chronological order after evening logs.
+ */
+export function resolveIncidentTimestamps(
+  logicalDateStr: string,
+  startTimeStr: string,
+  endTimeStr: string
+): { startObj: Date; endObj: Date } {
+  const [yr, mo, da] = logicalDateStr.split("-").map(Number);
+  const [sh, sm] = startTimeStr.split(":").map(Number);
+  const [eh, em] = endTimeStr.split(":").map(Number);
+
+  const startOffset = sh < 7 ? 1 : 0;
+  const endOffset = eh < 7 ? 1 : 0;
+
+  const startObj = new Date(yr, mo - 1, da + startOffset, sh, sm);
+  let endObj = new Date(yr, mo - 1, da + endOffset, eh, em);
+
+  if (endObj.getTime() < startObj.getTime()) {
+    endObj = new Date(endObj.getTime() + 86400000);
+  }
+
+  return { startObj, endObj };
+}
+
+/**
+ * Extracts local HH:MM string from an ISO timestamp for <input type="time">.
+ */
+export function toTimeInputValue(time: string | Date): string {
+  const d = new Date(time);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 /**
