@@ -15,65 +15,78 @@ export function deriveSurgeOccurred(defenseOccurred: boolean): boolean {
   return !defenseOccurred;
 }
 
-const MS_PER_DAY = 86400000;
+export interface StreakInfo {
+  days: number;
+  hours: number;
+  totalHours: number;
+}
 
 /**
- * High-efficiency, single-pass streak calculation.
- * Compares ISO YYYY-MM-DD strings directly without repeated Date allocations.
+ * Calculates progress / time since last incident for each tier level.
+ * Tracks elapsed duration (days and hours) since the latest incident affecting that tier.
+ * Tiers reset on incidents with tier_level >= tier.
+ * L0 (Pure Focus) tracks time since any incident (tier >= 1).
  */
 export function calculateStreaks(
-  incidents: Array<{ logical_date: string; tier_level: number }>,
-  todayDateStr: string,
-  inceptionDateStr?: string
-): Record<TierLevel, number> {
-  const todayTime = new Date(todayDateStr + "T00:00:00Z").getTime();
+  incidents: Array<{
+    logical_date: string;
+    tier_level: number;
+    start_time?: string;
+    end_time?: string;
+  }>,
+  todayDateStr?: string,
+  inceptionDateStr?: string,
+  nowMs: number = Date.now()
+): Record<TierLevel, StreakInfo> {
+  let inceptionTime = inceptionDateStr ? new Date(inceptionDateStr).getTime() : nowMs;
+  if (isNaN(inceptionTime)) inceptionTime = nowMs;
 
-  // Track latest incident date per tier in a single pass
-  const latestByTier: Record<number, string> = { 1: "", 2: "", 3: "", 4: "", 5: "" };
-  let earliestDate = inceptionDateStr ? inceptionDateStr.slice(0, 10) : todayDateStr;
+  // Track latest incident timestamp that resets each tier
+  const latestTimeByTier: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
   for (let i = 0; i < incidents.length; i++) {
     const inc = incidents[i];
-    const d = inc.logical_date;
-    if (d < earliestDate) earliestDate = d;
+    const timeStr = inc.end_time || inc.start_time;
+    let incTime = timeStr ? new Date(timeStr).getTime() : NaN;
+    if (isNaN(incTime)) {
+      incTime = new Date(`${inc.logical_date}T12:00:00`).getTime();
+    }
 
-    // For any tier <= inc.tier_level, this incident resets that tier's streak
-    for (let t = 1; t <= inc.tier_level; t++) {
-      if (!latestByTier[t] || d > latestByTier[t]) {
-        latestByTier[t] = d;
+    if (!isNaN(incTime)) {
+      if (incTime < inceptionTime) {
+        inceptionTime = incTime;
+      }
+      // For any tier <= inc.tier_level, this incident resets that tier's streak
+      const maxTier = Math.min(5, Math.max(1, inc.tier_level));
+      for (let t = 1; t <= maxTier; t++) {
+        if (incTime > latestTimeByTier[t]) {
+          latestTimeByTier[t] = incTime;
+        }
       }
     }
   }
 
-  const maxInceptionDays = Math.max(
-    0,
-    Math.floor((todayTime - new Date(earliestDate + "T00:00:00Z").getTime()) / MS_PER_DAY)
-  );
-
-  const result: Record<TierLevel, number> = {
-    0: 0,
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
+  const result: Record<TierLevel, StreakInfo> = {
+    0: { days: 0, hours: 0, totalHours: 0 },
+    1: { days: 0, hours: 0, totalHours: 0 },
+    2: { days: 0, hours: 0, totalHours: 0 },
+    3: { days: 0, hours: 0, totalHours: 0 },
+    4: { days: 0, hours: 0, totalHours: 0 },
+    5: { days: 0, hours: 0, totalHours: 0 },
   };
 
   for (let t = 1; t <= 5; t++) {
-    const latest = latestByTier[t];
-    if (!latest) {
-      result[t as TierLevel] = maxInceptionDays;
-    } else {
-      const daysSince = Math.max(
-        0,
-        Math.floor((todayTime - new Date(latest + "T00:00:00Z").getTime()) / MS_PER_DAY)
-      );
-      result[t as TierLevel] = daysSince;
-    }
+    const refTime = latestTimeByTier[t] > 0 ? latestTimeByTier[t] : inceptionTime;
+    const diffMs = Math.max(0, nowMs - refTime);
+    const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+
+    result[t as TierLevel] = { days, hours, totalHours };
   }
 
-  // Pure Focus (L0) tracks days since any divergence (tier >= 1)
-  result[0] = result[1];
+  // Pure Focus (L0) tracks days/hours since any divergence (tier >= 1)
+  result[0] = { ...result[1] };
 
   return result;
 }

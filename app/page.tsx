@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { DashboardIncident, getDashboardData } from "@/app/actions/incidents";
 import { getVaultConfig, VaultStatus } from "@/app/actions/vault";
 import { calculateStreaks } from "@/lib/telemetry/scoring";
@@ -57,8 +57,19 @@ export default function DashboardPage() {
     loadData();
   }, [loadData]);
 
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowMs(Date.now());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   const todayStr = getBiologicalTodayDateString();
-  const streaks = calculateStreaks(incidents, todayStr, inceptionDate);
+  const streaks = useMemo(() => {
+    return calculateStreaks(incidents, todayStr, inceptionDate, nowMs);
+  }, [incidents, todayStr, inceptionDate, nowMs]);
 
   return (
     <div className="min-h-screen bg-bg text-main">
